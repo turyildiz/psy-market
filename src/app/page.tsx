@@ -86,7 +86,7 @@ export default function Home() {
         <div className="container">
           <a href="#" className="nav-logo">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo_white.png" alt="Psy.Market" />
+            <img src="/logo.png" alt="Psy.Market" />
           </a>
           <ul className="nav-links">
             <li><a href="#">Apparel</a></li>
