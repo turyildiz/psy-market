@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:stack.convex.dev)",
+      "WebFetch(domain:blog.jeremyquinto.com)",
+      "WebFetch(domain:dev.to)",
+      "Bash(git -C c:/Projects/psy-market-3 status)",
+      "Bash(git reset:*)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(git add:*)"
+    ]
+  }
+}
