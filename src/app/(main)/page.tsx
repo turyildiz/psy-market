@@ -1,20 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function Home() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 150);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   useEffect(() => {
     // Scroll reveal observer
     const revealElements = document.querySelectorAll(".reveal");
@@ -33,72 +21,8 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   return (
     <>
-      {/* ============ TOP BAR ============ */}
-      <header className="top-bar">
-        <div className="container">
-          <a href="#" className="logo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo_web.png" alt="Psy.Market" className="logo-img" />
-          </a>
-
-          <div className="auth-buttons">
-            <a href="/login" className="btn btn-outline">Log In</a>
-            <a href="/signup" className="btn btn-primary">Sign Up</a>
-          </div>
-
-          <div
-            className={`hamburger ${isMobileMenuOpen ? "active" : ""}`}
-            onClick={toggleMobileMenu}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <nav className={`mobile-menu ${isMobileMenuOpen ? "active" : ""}`}>
-          <a href="#">Apparel</a>
-          <a href="#">Art &amp; Decor</a>
-          <a href="#">Music Gear</a>
-          <a href="#">Tickets</a>
-          <a href="#">Vintage</a>
-          <a href="#">New Arrivals</a>
-          <div className="mobile-auth">
-            <a href="/login" className="btn btn-outline" style={{ flex: 1 }}>
-              Log In
-            </a>
-            <a href="/signup" className="btn btn-primary" style={{ flex: 1 }}>
-              Sign Up
-            </a>
-          </div>
-        </nav>
-      </header>
-
-      {/* ============ DESKTOP NAV ============ */}
-      <nav className={`nav-bar ${isScrolled ? "scrolled" : ""}`}>
-        <div className="container">
-          <a href="#" className="nav-logo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Psy.Market" />
-          </a>
-          <ul className="nav-links">
-            <li><a href="#">Apparel</a></li>
-            <li><a href="#">Art &amp; Decor</a></li>
-            <li><a href="#">Music Gear</a></li>
-            <li><a href="#">Tickets</a></li>
-            <li><a href="#">Vintage</a></li>
-            <li><a href="#">New Arrivals</a></li>
-          </ul>
-        </div>
-      </nav>
-
       {/* ============ NEW HERO SECTION ============ */}
       <section className="hero-new">
         {/* Background */}
@@ -439,58 +363,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ============ FOOTER ============ */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-grid">
-            <div className="footer-col">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo_web.png" alt="Psy.Market" className="footer-logo-img" />
-              <p className="footer-desc">
-                The global marketplace for the psytrance and festival community.
-                Connecting creators, artists, and ravers worldwide.
-              </p>
-            </div>
-            <div className="footer-col">
-              <h4>Shop</h4>
-              <ul>
-                <li><a href="#">Music Gear</a></li>
-                <li><a href="#">Apparel</a></li>
-                <li><a href="#">Art &amp; Decor</a></li>
-                <li><a href="#">Festival Tickets</a></li>
-              </ul>
-            </div>
-            <div className="footer-col">
-              <h4>Support</h4>
-              <ul>
-                <li><a href="#">Help Center</a></li>
-                <li><a href="#">Selling Guide</a></li>
-                <li><a href="#">Community Guidelines</a></li>
-                <li><a href="#">Return Policy</a></li>
-              </ul>
-            </div>
-            <div className="footer-col">
-              <h4>Stay in the Loop</h4>
-              <p className="footer-desc" style={{ marginBottom: '16px' }}>
-                Get the latest drops, festival updates, and community news.
-              </p>
-              <div className="newsletter-input">
-                <input type="email" placeholder="Your email address" />
-                <button>Join</button>
-              </div>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <p>&copy; 2026 Psy.Market. All rights reserved.</p>
-            <div className="footer-bottom-links">
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
-              <a href="#">Cookie Policy</a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </>
   );
 }

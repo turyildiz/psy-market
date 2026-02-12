@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--dark-1)] px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <OnboardingForm
           currentDisplayName={profile?.display_name || "New User"}

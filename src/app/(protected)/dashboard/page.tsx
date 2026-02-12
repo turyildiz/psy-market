@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -8,18 +7,14 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
-
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", user!.id)
     .single();
 
   return (
-    <div className="min-h-screen bg-[var(--dark-1)] text-white p-8">
+    <div className="bg-[var(--dark-1)] text-white p-8 min-h-[60vh]">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
         <p className="text-[var(--text-muted)] mb-8">
