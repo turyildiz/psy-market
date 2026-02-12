@@ -48,8 +48,8 @@ export default function Home() {
           </a>
 
           <div className="auth-buttons">
-            <button className="btn btn-outline">Log In</button>
-            <button className="btn btn-primary">Sign Up</button>
+            <a href="/login" className="btn btn-outline">Log In</a>
+            <a href="/signup" className="btn btn-primary">Sign Up</a>
           </div>
 
           <div
@@ -71,12 +71,12 @@ export default function Home() {
           <a href="#">Vintage</a>
           <a href="#">New Arrivals</a>
           <div className="mobile-auth">
-            <button className="btn btn-outline" style={{ flex: 1 }}>
+            <a href="/login" className="btn btn-outline" style={{ flex: 1 }}>
               Log In
-            </button>
-            <button className="btn btn-primary" style={{ flex: 1 }}>
+            </a>
+            <a href="/signup" className="btn btn-primary" style={{ flex: 1 }}>
               Sign Up
-            </button>
+            </a>
           </div>
         </nav>
       </header>
