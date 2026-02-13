@@ -475,11 +475,25 @@ body::before {
   font-weight: 500;
   transition: all var(--transition);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mobile-menu a:hover {
-  color: var(--brand);
-  padding-left: 32px;
+@media (hover: hover) and (pointer: fine) {
+  .mobile-menu a:hover {
+    color: var(--brand);
+    padding-left: 32px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .mobile-menu a:hover {
+    color: var(--text-light);
+    padding-left: 24px;
+  }
+
+  .mobile-menu a:active {
+    color: var(--brand);
+  }
 }
 
 .mobile-menu .mobile-auth {

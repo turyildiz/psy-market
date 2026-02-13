@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_CATEGORIES } from "@/lib/constants";
 import { useLoginModal } from "@/components/auth/login-modal-provider";
@@ -38,6 +38,8 @@ function getInitials(name: string | undefined): string {
 export function SiteHeader({ user, profile }: SiteHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
   const { openLogin, openSignup } = useLoginModal();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -52,7 +54,7 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [pathname]);
+  }, [pathname, search]);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
 
