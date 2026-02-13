@@ -9,7 +9,6 @@ const publicRoutes = [
   "/events",
   "/privacy",
   "/terms",
-  "/login",
   "/signup",
 ];
 
@@ -32,8 +31,9 @@ export async function middleware(request: NextRequest) {
   // Require auth for all other routes
   if (!user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    url.pathname = "/";
+    url.searchParams.set("auth", "login");
+    url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
 

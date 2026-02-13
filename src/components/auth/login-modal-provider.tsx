@@ -6,11 +6,48 @@ import {
   useContext,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AuthModal } from "./auth-modal";
 
 type ModalMode = null | "login" | "signup" | "check-email";
+
+function getAuthModalModeFromUrl(): ModalMode {
+  if (typeof window === "undefined") return null;
+  const auth = new URLSearchParams(window.location.search).get("auth");
+  if (auth === "login" || auth === "signup") {
+    return auth;
+  }
+  return null;
+}
+
+function getAuthErrorFromUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  const error = new URLSearchParams(window.location.search).get("error");
+  if (error === "auth") {
+    return "Authentication failed. Please try again.";
+  }
+  return null;
+}
+
+function getNextPathFromUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return null;
+  }
+  return next;
+}
+
+function clearAuthQueryParams(): void {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("auth");
+  url.searchParams.delete("next");
+  url.searchParams.delete("error");
+  const query = url.searchParams.toString();
+  const nextUrl = `${url.pathname}${query ? `?${query}` : ""}${url.hash}`;
+  window.history.replaceState({}, "", nextUrl);
+}
 
 interface AuthModalContextValue {
   openLogin: () => void;
@@ -29,13 +66,13 @@ export function useLoginModal() {
 }
 
 export function LoginModalProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<ModalMode>(null);
+  const [mode, setMode] = useState<ModalMode>(() => getAuthModalModeFromUrl());
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => getAuthErrorFromUrl());
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [returnTo, setReturnTo] = useState<string | null>(() => getNextPathFromUrl());
 
   const resetForm = useCallback(() => {
     setError(null);
@@ -45,9 +82,22 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     setLoading(false);
   }, []);
 
-  const openLogin = useCallback(() => { resetForm(); setMode("login"); }, [resetForm]);
-  const openSignup = useCallback(() => { resetForm(); setMode("signup"); }, [resetForm]);
-  const close = useCallback(() => { setMode(null); resetForm(); }, [resetForm]);
+  const openLogin = useCallback(() => {
+    resetForm();
+    setReturnTo(getNextPathFromUrl());
+    setMode("login");
+  }, [resetForm]);
+  const openSignup = useCallback(() => {
+    resetForm();
+    setReturnTo(getNextPathFromUrl());
+    setMode("signup");
+  }, [resetForm]);
+  const close = useCallback(() => {
+    setMode(null);
+    setReturnTo(null);
+    resetForm();
+    clearAuthQueryParams();
+  }, [resetForm]);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -63,9 +113,10 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
       return;
     }
 
+    const destination = returnTo ?? "/dashboard";
     setLoading(false);
-    close();
-    router.refresh();
+    clearAuthQueryParams();
+    window.location.assign(destination);
   }
 
   async function handleEmailSignup(e: React.FormEvent) {

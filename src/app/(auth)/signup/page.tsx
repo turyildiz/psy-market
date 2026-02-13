@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,12 +87,12 @@ export default function SignupPage() {
           </CardDescription>
         </CardHeader>
         <CardFooter className="justify-center">
-          <a
-            href="/login"
+          <Link
+            href="/?auth=login"
             className="text-sm text-[var(--brand)] hover:underline font-medium"
           >
             Back to login
-          </a>
+          </Link>
         </CardFooter>
       </Card>
     );
@@ -215,12 +216,12 @@ export default function SignupPage() {
       <CardFooter className="justify-center">
         <p className="text-sm text-[var(--text-grey)]">
           Already have an account?{" "}
-          <a
-            href="/login"
+          <Link
+            href="/?auth=login"
             className="text-[var(--brand)] hover:underline font-medium"
           >
             Sign in
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>

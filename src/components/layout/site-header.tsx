@@ -88,7 +88,7 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 bg-[var(--dark-2)] border-[var(--dark-3)] text-white"
+                  className="z-[220] w-56 bg-[var(--dark-2)] border-[var(--dark-3)] text-white"
                 >
                   <DropdownMenuLabel className="font-normal">
                     <div className="font-medium text-white">{profile?.display_name}</div>

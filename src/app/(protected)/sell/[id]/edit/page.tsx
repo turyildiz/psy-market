@@ -15,7 +15,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(`/?auth=login&next=${encodeURIComponent(`/sell/${id}/edit`)}`);
   }
 
   const { data: profile } = await supabase
@@ -45,4 +45,3 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
     </div>
   );
 }
-
