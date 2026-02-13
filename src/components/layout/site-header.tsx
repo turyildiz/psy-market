@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Bell, Heart, MessageSquare, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_CATEGORIES } from "@/lib/constants";
 import { useLoginModal } from "@/components/auth/login-modal-provider";
@@ -77,47 +78,77 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
 
           {user ? (
             <div className="auth-buttons">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 outline-none cursor-pointer">
-                    <Avatar className="h-9 w-9 border-2 border-[var(--dark-4)]">
-                      <AvatarImage src={profile?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-[var(--dark-3)] text-[var(--brand)] text-sm font-semibold">
-                        {getInitials(profile?.display_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="z-[220] w-56 bg-[var(--dark-2)] border-[var(--dark-3)] text-white"
+              <div className="flex items-center gap-5 text-white/85">
+                <button
+                  type="button"
+                  aria-label="Notifications"
+                  className="relative transition-colors hover:text-white"
                 >
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="font-medium text-white">{profile?.display_name}</div>
-                    <div className="text-xs text-[var(--text-muted)]">
-                      @{profile?.handle}
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-[var(--dark-4)]" />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer text-white">
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/listings" className="cursor-pointer text-white">
-                      My Listings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-[var(--dark-4)]" />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="cursor-pointer text-red-400 focus:text-red-400"
+                  <Bell size={20} strokeWidth={1.8} />
+                  <span className="absolute -right-1.5 -top-1.5 h-2.5 w-2.5 rounded-full bg-[var(--brand)]" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Favorites"
+                  className="transition-colors hover:text-white"
+                >
+                  <Heart size={20} strokeWidth={1.8} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Messages"
+                  className="transition-colors hover:text-white"
+                >
+                  <MessageSquare size={20} strokeWidth={1.8} />
+                </button>
+                <span className="h-6 w-px bg-white/20" aria-hidden="true" />
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 outline-none cursor-pointer transition-opacity hover:opacity-100 opacity-95"
+                    >
+                      <Avatar className="h-11 w-11 border border-[#e9b58f]/60 bg-[#f7d8bf]">
+                        <AvatarImage src={profile?.avatar_url || undefined} />
+                        <AvatarFallback className="bg-[linear-gradient(90deg,#efd9c7_0%,#efd9c7_48%,#f9c9a3_48%,#f9c9a3_100%)] text-[#1c1a18] text-sm font-semibold">
+                          {getInitials(profile?.display_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ChevronDown size={15} strokeWidth={2} className="text-white/80" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="z-[220] w-56 bg-[var(--dark-2)] border-[var(--dark-3)] text-white"
                   >
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="font-medium text-white">{profile?.display_name}</div>
+                      <div className="text-xs text-[var(--text-muted)]">
+                        @{profile?.handle}
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[var(--dark-4)]" />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard" className="cursor-pointer text-white">
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/listings" className="cursor-pointer text-white">
+                        My Listings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-[var(--dark-4)]" />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer text-red-400 focus:text-red-400"
+                    >
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           ) : (
             <div className="auth-buttons">
