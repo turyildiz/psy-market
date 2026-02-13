@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_CATEGORIES } from "@/lib/constants";
+import { useLoginModal } from "@/components/auth/login-modal-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -37,6 +38,7 @@ function getInitials(name: string | undefined): string {
 export function SiteHeader({ user, profile }: SiteHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { openLogin, openSignup } = useLoginModal();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -89,19 +91,19 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
                   className="w-56 bg-[var(--dark-2)] border-[var(--dark-3)] text-white"
                 >
                   <DropdownMenuLabel className="font-normal">
-                    <div className="font-medium">{profile?.display_name}</div>
+                    <div className="font-medium text-white">{profile?.display_name}</div>
                     <div className="text-xs text-[var(--text-muted)]">
                       @{profile?.handle}
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-[var(--dark-4)]" />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer">
+                    <Link href="/dashboard" className="cursor-pointer text-white">
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer text-[var(--text-muted)]">
+                    <Link href="/dashboard/listings" className="cursor-pointer text-white">
                       My Listings
                     </Link>
                   </DropdownMenuItem>
@@ -117,12 +119,12 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
             </div>
           ) : (
             <div className="auth-buttons">
-              <Link href="/login" className="btn btn-outline">
+              <button type="button" onClick={openLogin} className="btn btn-outline">
                 Log In
-              </Link>
-              <Link href="/signup" className="btn btn-primary">
+              </button>
+              <button type="button" onClick={openSignup} className="btn btn-primary">
                 Sign Up
-              </Link>
+              </button>
             </div>
           )}
 
@@ -162,12 +164,12 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
             </div>
           ) : (
             <div className="mobile-auth">
-              <Link href="/login" className="btn btn-outline" style={{ flex: 1 }}>
+              <button type="button" onClick={openLogin} className="btn btn-outline" style={{ flex: 1 }}>
                 Log In
-              </Link>
-              <Link href="/signup" className="btn btn-primary" style={{ flex: 1 }}>
+              </button>
+              <button type="button" onClick={openSignup} className="btn btn-primary" style={{ flex: 1 }}>
                 Sign Up
-              </Link>
+              </button>
             </div>
           )}
         </nav>

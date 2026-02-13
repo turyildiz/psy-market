@@ -7,7 +7,18 @@
       "Bash(git -C c:/Projects/psy-market-3 status)",
       "Bash(git reset:*)",
       "WebFetch(domain:supabase.com)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(find:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "mcp__plugin_playwright_playwright__browser_close"
     ]
   }
 }
