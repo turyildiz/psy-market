@@ -2,54 +2,59 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Rss, Package, MessageSquare, Heart, User, Settings } from "lucide-react";
 
 const SIDEBAR_ITEMS = [
-  { label: "My Listings", href: "/dashboard/listings" },
-  { label: "Messages", href: "/dashboard/messages" },
-  { label: "Saved Items", href: "/dashboard/saved" },
-  { label: "Profile", href: "/dashboard/profile" },
-  { label: "Settings", href: "/dashboard/settings" },
+  { label: "Feed",        href: "/dashboard",          icon: Rss },
+  { label: "My Listings", href: "/dashboard/listings", icon: Package },
+  { label: "Messages",    href: "/dashboard/messages", icon: MessageSquare },
+  { label: "Saved Items", href: "/dashboard/saved",    icon: Heart },
+  { label: "Profile",     href: "/dashboard/profile",  icon: User },
+  { label: "Settings",    href: "/dashboard/settings", icon: Settings },
 ];
 
 export function DashboardNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-full md:w-52 md:shrink-0 bg-white rounded-2xl border border-gray-200 shadow-[var(--shadow-card)] overflow-hidden">
+    <aside className="w-full md:w-56 md:shrink-0 bg-white rounded-2xl border border-gray-200 shadow-[var(--shadow-card)] overflow-hidden">
       {/* Mobile: horizontal scrollable tabs */}
       <nav className="flex md:hidden overflow-x-auto scrollbar-none">
-        {SIDEBAR_ITEMS.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+        {SIDEBAR_ITEMS.map(({ label, href, icon: Icon }) => {
+          const isActive = href === "/dashboard" ? pathname === "/dashboard" : pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+              key={href}
+              href={href}
+              className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
                 isActive
                   ? "border-[var(--brand)] text-[var(--brand)]"
-                  : "border-transparent text-[var(--text-dark)] hover:text-[var(--brand)]"
+                  : "border-transparent text-[var(--text-grey)] hover:text-[var(--brand)]"
               }`}
             >
-              {item.label}
+              <Icon size={14} />
+              {label}
             </Link>
           );
         })}
       </nav>
+
       {/* Desktop: vertical list */}
-      <nav className="hidden md:block py-2">
-        {SIDEBAR_ITEMS.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+      <nav className="hidden md:block p-2">
+        {SIDEBAR_ITEMS.map(({ label, href, icon: Icon }) => {
+          const isActive = href === "/dashboard" ? pathname === "/dashboard" : pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className={`block px-5 py-3 text-sm font-medium transition-colors ${
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all mb-0.5 ${
                 isActive
-                  ? "bg-[var(--brand)] text-white"
-                  : "text-[var(--text-dark)] hover:bg-gray-50"
+                  ? "bg-gradient-to-r from-[var(--brand)] to-orange-400 text-white shadow-[0_4px_12px_rgba(255,107,53,0.35)]"
+                  : "text-[var(--text-grey)] hover:bg-gray-50 hover:text-[var(--text-dark)]"
               }`}
             >
-              {item.label}
+              <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+              {label}
             </Link>
           );
         })}
