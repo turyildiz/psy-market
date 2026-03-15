@@ -40,7 +40,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   }
 
   return (
-    <div className="bg-[var(--dark-1)] text-white min-h-[60vh] p-8">
+    <div className="min-h-[60vh] py-10 px-6 max-w-[1200px] mx-auto">
       <ListingForm mode="edit" listingId={id} initialValues={listing} />
     </div>
   );

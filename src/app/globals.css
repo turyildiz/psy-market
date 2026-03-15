@@ -818,6 +818,14 @@ body::before {
   display: none;
 }
 
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 .artist-card {
   text-align: center;
   flex-shrink: 0;

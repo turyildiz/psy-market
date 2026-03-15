@@ -18,10 +18,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const { listing, profile } = data;
 
   return (
-    <div className="bg-[var(--dark-1)] text-white min-h-[60vh] p-8">
-      <div className="max-w-6xl mx-auto grid gap-6 lg:grid-cols-2">
+    <div className="min-h-[60vh] py-10 px-4">
+      <div className="max-w-[1200px] mx-auto grid gap-8 lg:grid-cols-2">
         <div className="space-y-3">
-          <div className="rounded-lg overflow-hidden border border-[var(--dark-3)]">
+          <div className="rounded-2xl overflow-hidden bg-gray-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={listing.images?.[0] || "/modem.jpg"}
@@ -34,7 +34,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {listing.images.slice(1).map((image: string) => (
                 <div
                   key={image}
-                  className="rounded-md overflow-hidden border border-[var(--dark-3)]"
+                  className="rounded-xl overflow-hidden bg-gray-100"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={image} alt={listing.title} className="w-full aspect-square object-cover" />
@@ -45,20 +45,22 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         </div>
 
         <div className="space-y-5">
-          <h1 className="text-3xl font-bold">{listing.title}</h1>
-          <p className="text-2xl text-[var(--brand)] font-semibold">{formatPrice(listing.price)}</p>
-          <p className="text-[var(--text-muted)] capitalize">
-            {listing.category} - {listing.condition.replace("_", " ")} - Size {listing.size}
-          </p>
-          <p className="text-sm leading-6">{listing.description}</p>
+          <h1 className="text-3xl font-bold text-[var(--text-dark)]" style={{ fontFamily: 'var(--font-display)' }}>{listing.title}</h1>
+          <p className="text-3xl text-[var(--brand)] font-bold" style={{ fontFamily: 'var(--font-display)' }}>{formatPrice(listing.price)}</p>
+          <div className="flex flex-wrap gap-2">
+            <span className="px-3 py-1 rounded-full bg-gray-100 text-[var(--text-grey)] text-sm capitalize">{listing.category}</span>
+            <span className="px-3 py-1 rounded-full bg-gray-100 text-[var(--text-grey)] text-sm capitalize">{listing.condition.replace("_", " ")}</span>
+            <span className="px-3 py-1 rounded-full bg-gray-100 text-[var(--text-grey)] text-sm">Size: {listing.size}</span>
+          </div>
+          <p className="text-sm text-[var(--text-grey)] leading-6">{listing.description}</p>
 
           <div className="space-y-2">
-            <p className="text-sm text-[var(--text-muted)]">Ships to</p>
+            <p className="text-sm font-semibold text-[var(--text-dark)]">Ships to</p>
             <div className="flex flex-wrap gap-2">
               {(listing.ships_to ?? []).map((country: string) => (
                 <span
                   key={country}
-                  className="px-2 py-1 rounded-md bg-[var(--dark-3)] text-xs text-[var(--text-muted)]"
+                  className="px-2 py-1 rounded-md bg-gray-100 text-xs text-[var(--text-grey)]"
                 >
                   {country}
                 </span>
@@ -66,15 +68,19 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </div>
           </div>
 
-          <div className="rounded-lg border border-[var(--dark-3)] bg-[var(--dark-2)] p-4">
-            <p className="text-sm text-[var(--text-muted)]">Seller</p>
-            <p className="font-semibold">{profile?.display_name ?? "Unknown"}</p>
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-[var(--shadow-card)]">
+            <p className="text-xs font-semibold text-[var(--text-grey)] uppercase tracking-wide mb-2">Seller</p>
+            <p className="font-semibold text-[var(--text-dark)]">{profile?.display_name ?? "Unknown"}</p>
             {profile?.handle ? (
-              <Link href={`/seller/${profile.handle}`} className="text-sm text-[var(--brand)]">
+              <Link href={`/seller/${profile.handle}`} className="text-sm text-[var(--brand)] font-medium hover:opacity-75 transition">
                 @{profile.handle}
               </Link>
             ) : null}
           </div>
+
+          <button className="w-full h-12 rounded-full bg-[var(--brand)] text-white font-semibold text-base shadow-[var(--shadow-card)] hover:opacity-90 transition">
+            Contact Seller
+          </button>
         </div>
       </div>
     </div>

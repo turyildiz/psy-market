@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Bell, Heart, MessageSquare, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_CATEGORIES } from "@/lib/constants";
 import { useLoginModal } from "@/components/auth/login-modal-provider";
@@ -78,31 +78,7 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
 
           {user ? (
             <div className="auth-buttons">
-              <div className="flex items-center gap-5 text-white/85">
-                <button
-                  type="button"
-                  aria-label="Notifications"
-                  className="relative transition-colors hover:text-white"
-                >
-                  <Bell size={20} strokeWidth={1.8} />
-                  <span className="absolute -right-1.5 -top-1.5 h-2.5 w-2.5 rounded-full bg-[var(--brand)]" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Favorites"
-                  className="transition-colors hover:text-white"
-                >
-                  <Heart size={20} strokeWidth={1.8} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Messages"
-                  className="transition-colors hover:text-white"
-                >
-                  <MessageSquare size={20} strokeWidth={1.8} />
-                </button>
-                <span className="h-6 w-px bg-white/20" aria-hidden="true" />
-
+              <div className="flex items-center gap-3 text-white/85">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -132,11 +108,6 @@ export function SiteHeader({ user, profile }: SiteHeaderProps) {
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard" className="cursor-pointer text-white">
                         Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/listings" className="cursor-pointer text-white">
-                        My Listings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-[var(--dark-4)]" />

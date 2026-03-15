@@ -6,20 +6,20 @@ export default async function DashboardListingsPage() {
   const listings = await getCurrentUserListings();
 
   return (
-    <div className="bg-[var(--dark-1)] text-white p-8 min-h-[60vh]">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div>
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">My Listings</h1>
+          <h1 className="text-3xl font-bold text-[var(--text-dark)]" style={{ fontFamily: 'var(--font-display)' }}>My Listings</h1>
           <Link
             href="/sell"
-            className="h-9 px-3 rounded-md bg-[var(--brand)] text-white text-sm font-medium inline-flex items-center"
+            className="h-9 px-4 rounded-full bg-[var(--brand)] text-white text-sm font-semibold inline-flex items-center shadow-[var(--shadow-card)] hover:opacity-90 transition"
           >
-            New Listing
+            + New Listing
           </Link>
         </div>
 
         {listings.length === 0 ? (
-          <div className="rounded-lg border border-[var(--dark-3)] bg-[var(--dark-2)] p-6 text-[var(--text-muted)]">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 text-[var(--text-grey)] shadow-[var(--shadow-card)]">
             You have no listings yet.
           </div>
         ) : (
@@ -27,10 +27,10 @@ export default async function DashboardListingsPage() {
             {listings.map((listing) => (
               <div
                 key={listing.id}
-                className="rounded-lg border border-[var(--dark-3)] bg-[var(--dark-2)] p-4 flex items-center justify-between gap-4"
+                className="rounded-xl border border-gray-200 bg-white p-4 flex items-center justify-between gap-4 shadow-[var(--shadow-card)]"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-16 h-16 rounded-md overflow-hidden bg-[var(--dark-3)] shrink-0">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={listing.images?.[0] || "/modem.jpg"}
@@ -39,12 +39,12 @@ export default async function DashboardListingsPage() {
                     />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold truncate">{listing.title}</p>
-                    <p className="text-sm text-[var(--text-muted)]">{formatPrice(listing.price)}</p>
-                    <p className="text-xs uppercase text-[var(--brand)]">{listing.status}</p>
+                    <p className="font-semibold text-[var(--text-dark)] truncate">{listing.title}</p>
+                    <p className="text-sm text-[var(--text-grey)]">{formatPrice(listing.price)}</p>
+                    <p className="text-xs uppercase font-semibold text-[var(--brand)]">{listing.status}</p>
                   </div>
                 </div>
-                <Link href={`/sell/${listing.id}/edit`} className="text-sm text-[var(--brand)]">
+                <Link href={`/sell/${listing.id}/edit`} className="text-sm font-semibold text-[var(--brand)] hover:opacity-75 transition">
                   Edit
                 </Link>
               </div>

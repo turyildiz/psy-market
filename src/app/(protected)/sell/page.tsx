@@ -2,7 +2,7 @@ import { ListingForm } from "@/components/listings/listing-form";
 
 export default function CreateListingPage() {
   return (
-    <div className="bg-[var(--dark-1)] text-white min-h-[60vh] p-8">
+    <div className="min-h-[60vh] py-10 px-6 max-w-[1200px] mx-auto">
       <ListingForm mode="create" />
     </div>
   );
