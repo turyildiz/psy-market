@@ -1,8 +1,22 @@
-export default function ProfilePage() {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-[var(--shadow-card)] p-8">
-      <h1 className="text-2xl font-bold text-[var(--text-dark)] mb-2" style={{ fontFamily: 'var(--font-display)' }}>Profile</h1>
-      <p className="text-[var(--text-grey)]">Edit your public profile. Coming soon.</p>
-    </div>
-  );
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { ProfileEditForm } from "./_components/profile-edit-form";
+
+export default async function ProfilePage() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/sign-in");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("handle, display_name, bio, avatar_url, header_url, location")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!profile) redirect("/onboarding");
+
+  return <ProfileEditForm profile={profile} userId={user.id} />;
 }

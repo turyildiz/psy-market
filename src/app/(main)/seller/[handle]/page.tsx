@@ -16,7 +16,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, handle, display_name, bio, location, avatar_url, created_at")
+    .select("id, handle, display_name, bio, location, avatar_url, header_url, created_at")
     .eq("handle", handle)
     .single();
 
@@ -63,7 +63,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
         <div className="relative w-full h-40 md:h-52 rounded-3xl overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1400&q=80"
+            src={profile.header_url ?? "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1400&q=80"}
             alt=""
             className="w-full h-full object-cover"
           />

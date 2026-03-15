@@ -12,13 +12,16 @@ export default async function DashboardPage() {
     .eq("user_id", user!.id)
     .single();
 
-  // Get profiles this user follows
+  // Get profiles this user follows (with full profile info)
   const { data: following } = await supabase
     .from("follows")
-    .select("following_profile_id")
+    .select("following_profile_id, profiles:following_profile_id(id, handle, display_name, avatar_url)")
     .eq("follower_profile_id", myProfile?.id ?? "");
 
   const followingIds = (following ?? []).map((f) => f.following_profile_id);
+  const followingProfiles = (following ?? [])
+    .map((f) => f.profiles as unknown as { id: string; handle: string; display_name: string; avatar_url: string | null } | null)
+    .filter(Boolean) as { id: string; handle: string; display_name: string; avatar_url: string | null }[];
 
   // Get latest listings from followed sellers
   const { data: feedListings } = followingIds.length > 0
@@ -31,19 +34,13 @@ export default async function DashboardPage() {
         .limit(24)
     : { data: [] };
 
-  // Get profile info for feed listings
-  const feedProfileIds = [...new Set((feedListings ?? []).map((l) => l.profile_id))];
-  const { data: feedProfiles } = feedProfileIds.length > 0
-    ? await supabase
-        .from("profiles")
-        .select("id, handle, display_name, avatar_url")
-        .in("id", feedProfileIds)
-    : { data: [] };
-
-  const profileMap = Object.fromEntries((feedProfiles ?? []).map((p) => [p.id, p]));
+  // Build profile map for listing cards (already fetched above via join)
+  const profileMap = Object.fromEntries(followingProfiles.map((p) => [p.id, p]));
 
   return (
     <div className="space-y-6">
+
+
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2
