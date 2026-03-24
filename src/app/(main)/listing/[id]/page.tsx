@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { getListingById } from "@/lib/data/listings";
 import { formatPrice } from "@/lib/utils";
 import { ContactSellerButton } from "@/components/listings/contact-seller-button";
+import { SaveButton } from "@/components/listings/save-button";
+import { getIsFavorited } from "@/lib/actions/favorites";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type ListingDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -11,12 +14,15 @@ type ListingDetailPageProps = {
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
   const { id } = await params;
   const data = await getListingById(id);
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!data) {
     notFound();
   }
 
   const { listing, profile } = data;
+  const isFavorited = user ? await getIsFavorited(id) : false;
 
   return (
     <div className="min-h-[60vh] py-10 px-4">
@@ -79,7 +85,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             ) : null}
           </div>
 
-          <ContactSellerButton listingId={listing.id} sellerProfileId={listing.profile_id} />
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <ContactSellerButton listingId={listing.id} sellerProfileId={listing.profile_id} />
+            </div>
+            <SaveButton listingId={listing.id} initialSaved={isFavorited} isLoggedIn={!!user} />
+          </div>
         </div>
       </div>
     </div>

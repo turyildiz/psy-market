@@ -3,20 +3,41 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 export type ListingFilters = {
   q?: string;
   category?: string;
+  condition?: string;
+  sort?: string;
+  min_price?: string;
+  max_price?: string;
 };
 
 export async function getActiveListings(filters: ListingFilters = {}) {
   const supabase = await createServerSupabaseClient();
 
+  const ascending = filters.sort === "price_asc";
+  const orderBy = filters.sort === "price_asc" || filters.sort === "price_desc" ? "price" : "created_at";
+
   let query = supabase
     .from("listings")
     .select("id, profile_id, title, price, condition, category, images, created_at")
     .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .limit(24);
+    .order(orderBy, { ascending })
+    .limit(48);
 
   if (filters.category) {
     query = query.eq("category", filters.category);
+  }
+
+  if (filters.condition) {
+    query = query.eq("condition", filters.condition);
+  }
+
+  if (filters.min_price) {
+    const cents = Math.round(Number(filters.min_price) * 100);
+    if (!isNaN(cents)) query = query.gte("price", cents);
+  }
+
+  if (filters.max_price) {
+    const cents = Math.round(Number(filters.max_price) * 100);
+    if (!isNaN(cents)) query = query.lte("price", cents);
   }
 
   if (filters.q?.trim()) {
