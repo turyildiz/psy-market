@@ -2,8 +2,24 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Psy.Market — The Universe of Psytrance Awaits",
-  description: "Your gateway to visionary art, festival fashion, and unique gear from independent creators worldwide.",
+  title: {
+    default: "psy.market — Psytrance Fashion & Culture Marketplace",
+    template: "%s | psy.market",
+  },
+  description: "Buy and sell festival fashion, jewelry, art, and music gear from the global psytrance community.",
+  metadataBase: new URL("https://psy.market"),
+  openGraph: {
+    type: "website",
+    siteName: "psy.market",
+    title: "psy.market — Psytrance Fashion & Culture Marketplace",
+    description: "Buy and sell festival fashion, jewelry, art, and music gear from the global psytrance community.",
+    images: [{ url: "/logo_web.png", width: 800, height: 400, alt: "psy.market" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "psy.market",
+    description: "Buy and sell festival fashion, jewelry, art, and music gear from the global psytrance community.",
+  },
 };
 
 export default function RootLayout({

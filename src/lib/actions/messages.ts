@@ -78,14 +78,14 @@ export async function sendMessage(
   const profileId = await getMyProfileId();
   if (!profileId) return { error: "Unauthorized" };
 
-  const { error } = await supabase.from("messages").insert({
+  const { data, error } = await supabase.from("messages").insert({
     thread_id: threadId,
     listing_id: listingId,
     sender_profile_id: profileId,
     receiver_profile_id: receiverProfileId,
     content: trimmed,
-  });
+  }).select("id").single();
 
   if (error) return { error: "Failed to send message" };
-  return { success: true };
+  return { success: true, messageId: data?.id };
 }

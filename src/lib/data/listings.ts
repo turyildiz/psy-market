@@ -55,6 +55,18 @@ export async function getActiveListings(filters: ListingFilters = {}) {
   return data ?? [];
 }
 
+export async function getFeaturedListings() {
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase
+    .from("listings")
+    .select("id, title, price, condition, category, images")
+    .eq("status", "active")
+    .eq("is_featured", true)
+    .order("updated_at", { ascending: false })
+    .limit(10);
+  return data ?? [];
+}
+
 export async function getListingById(id: string) {
   const supabase = await createServerSupabaseClient();
 

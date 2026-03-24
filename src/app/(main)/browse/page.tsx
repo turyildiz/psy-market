@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getActiveListings } from "@/lib/data/listings";
+import { getActiveListings, getFeaturedListings } from "@/lib/data/listings";
 import { formatPrice } from "@/lib/utils";
 
 type BrowsePageProps = {
@@ -50,14 +50,17 @@ function buildHref(base: Record<string, string | undefined>, overrides: Record<s
 
 export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const params = await searchParams;
-  const listings = await getActiveListings({
-    q: params.q,
-    category: params.category,
-    condition: params.condition,
-    sort: params.sort,
-    min_price: params.min_price,
-    max_price: params.max_price,
-  });
+  const [listings, featuredListings] = await Promise.all([
+    getActiveListings({
+      q: params.q,
+      category: params.category,
+      condition: params.condition,
+      sort: params.sort,
+      min_price: params.min_price,
+      max_price: params.max_price,
+    }),
+    getFeaturedListings(),
+  ]);
 
   const base = {
     q: params.q,
@@ -178,6 +181,47 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             </div>
           </div>
         </div>
+
+        {/* Featured carousel — only shown when featured listings exist and no active filters */}
+        {featuredListings.length > 0 && activeCount === 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2.5 py-1 bg-[var(--brand)] text-white text-xs font-bold rounded-full uppercase tracking-wide">
+                Featured
+              </span>
+              <h2 className="text-base font-semibold text-[var(--text-dark)]">Handpicked listings</h2>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
+              {featuredListings.map((listing) => (
+                <Link
+                  key={listing.id}
+                  href={`/listing/${listing.id}`}
+                  className="group shrink-0 w-44 block"
+                >
+                  <div className="relative w-44 h-44 rounded-xl overflow-hidden bg-gray-100 ring-2 ring-[var(--brand)]/30 group-hover:ring-[var(--brand)] transition">
+                    <Image
+                      src={listing.images?.[0] || "/modem.jpg"}
+                      alt={listing.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition duration-300"
+                      sizes="176px"
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className="px-2 py-0.5 bg-[var(--brand)] text-white text-[10px] font-bold rounded-full">
+                        Featured
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-2 space-y-0.5">
+                    <p className="text-sm font-semibold text-[var(--text-dark)] line-clamp-1">{listing.title}</p>
+                    <p className="text-sm font-bold text-[var(--brand)]">{formatPrice(listing.price)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-4 border-t border-gray-100" />
+          </div>
+        )}
 
         {/* Clear filters */}
         {activeCount > 0 && (

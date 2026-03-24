@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUserListings } from "@/lib/data/listings";
 import { formatPrice } from "@/lib/utils";
+import { MarkSoldButton } from "./_components/mark-sold-button";
 
 const STATUS_STYLES: Record<string, string> = {
   active:   "bg-green-50 text-green-700 border-green-200",
@@ -79,12 +80,19 @@ export default async function DashboardListingsPage() {
                 {listing.status}
               </span>
 
-              <Link
-                href={`/sell/${listing.id}/edit`}
-                className="text-xs font-semibold text-[var(--text-grey)] hover:text-[var(--brand)] transition shrink-0"
-              >
-                Edit
-              </Link>
+              <div className="flex items-center gap-3 shrink-0">
+                {listing.status === "active" && (
+                  <MarkSoldButton listingId={listing.id} />
+                )}
+                {listing.status !== "sold" && (
+                  <Link
+                    href={`/sell/${listing.id}/edit`}
+                    className="text-xs font-semibold text-[var(--text-grey)] hover:text-[var(--brand)] transition"
+                  >
+                    Edit
+                  </Link>
+                )}
+              </div>
             </div>
           ))}
         </div>

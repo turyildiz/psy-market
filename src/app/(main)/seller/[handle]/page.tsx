@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -7,6 +8,26 @@ import { FollowButton } from "@/components/seller/follow-button";
 type SellerPageProps = {
   params: Promise<{ handle: string }>;
 };
+
+export async function generateMetadata({ params }: SellerPageProps): Promise<Metadata> {
+  const { handle } = await params;
+  const supabase = await createServerSupabaseClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, bio, avatar_url")
+    .eq("handle", handle)
+    .single();
+  if (!profile) return { title: "Seller not found" };
+  return {
+    title: `${profile.display_name} (@${handle})`,
+    description: profile.bio ?? `Browse listings from ${profile.display_name} on psy.market`,
+    openGraph: {
+      title: `${profile.display_name} on psy.market`,
+      description: profile.bio ?? `Browse listings from ${profile.display_name}`,
+      images: profile.avatar_url ? [{ url: profile.avatar_url, alt: profile.display_name }] : [],
+    },
+  };
+}
 
 export default async function SellerPage({ params }: SellerPageProps) {
   const { handle } = await params;

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 
 export async function updateEmailNotifications(enabled: boolean) {
   const supabase = await createServerSupabaseClient();
@@ -24,20 +24,14 @@ export async function deleteAccount() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  // Soft-delete: suspend all profiles and sign out
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("user_id", user.id);
-
-  if (profiles && profiles.length > 0) {
-    await supabase
-      .from("profiles")
-      .update({ is_suspended: true })
-      .in("id", profiles.map((p) => p.id));
-  }
-
-  // Sign the user out
+  // Sign out first so the session is invalidated
   await supabase.auth.signOut();
+
+  // Hard delete: remove from public.users (cascades to profiles → listings/messages/favorites/follows)
+  // Then delete the auth.users record using service role
+  const admin = createServiceRoleClient();
+  await admin.from("users").delete().eq("id", user.id);
+  await admin.auth.admin.deleteUser(user.id);
+
   redirect("/");
 }

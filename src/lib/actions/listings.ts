@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { listingSchema } from "@/lib/validators";
 
@@ -164,5 +165,35 @@ export async function updateListing(
   }
 
   redirect("/dashboard/listings");
+}
+
+export async function markAsSold(listingId: string) {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!profile) return { error: "Profile not found" };
+
+  const { error } = await supabase
+    .from("listings")
+    .update({ status: "sold" })
+    .eq("id", listingId)
+    .eq("profile_id", profile.id)
+    .eq("status", "active");
+
+  if (error) return { error: "Failed to mark as sold" };
+  revalidatePath("/dashboard/listings");
+  return { success: true };
+}
+
+export async function incrementViewCount(listingId: string) {
+  const supabase = await createServerSupabaseClient();
+  await supabase.rpc("increment_view_count", { listing_id: listingId });
 }
 

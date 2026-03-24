@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useCallback } from "react";
 import { sendMessage } from "@/lib/actions/messages";
-import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 type Message = {
   id: string;
@@ -38,6 +38,27 @@ function formatDay(dateStr: string) {
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
+// Auto-linkify URLs in message text
+function renderContent(content: string) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = content.split(urlRegex);
+  return parts.map((part, i) =>
+    urlRegex.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline opacity-90 hover:opacity-100 break-all"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    )
+  );
+}
+
 export function MessageThread({
   threadId,
   receiverProfileId,
@@ -50,19 +71,58 @@ export function MessageThread({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const pendingIds = useRef<Set<string>>(new Set());
+
+  const scrollToBottom = useCallback(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  // Supabase Realtime subscription
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`thread:${threadId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `thread_id=eq.${threadId}`,
+        },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          // Skip if we already added this optimistically
+          if (pendingIds.current.has(newMsg.id)) {
+            pendingIds.current.delete(newMsg.id);
+            return;
+          }
+          setMessages((prev) => {
+            // Avoid duplicates
+            if (prev.some((m) => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [threadId]);
 
   function handleSend() {
     const trimmed = text.trim();
     if (!trimmed || isPending) return;
 
     setError(null);
+    const optimisticId = `optimistic-${Date.now()}`;
     const optimistic: Message = {
-      id: `optimistic-${Date.now()}`,
+      id: optimisticId,
       content: trimmed,
       sender_profile_id: myProfileId,
       created_at: new Date().toISOString(),
@@ -76,10 +136,14 @@ export function MessageThread({
       const result = await sendMessage(threadId, receiverProfileId, listingId, trimmed);
       if (result?.error) {
         setError(result.error);
-        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
         setText(trimmed);
-      } else {
-        router.refresh();
+      } else if (result?.messageId) {
+        // Replace optimistic with real id so realtime dedup works
+        pendingIds.current.add(result.messageId);
+        setMessages((prev) =>
+          prev.map((m) => m.id === optimisticId ? { ...m, id: result.messageId! } : m)
+        );
       }
     });
   }
@@ -101,6 +165,11 @@ export function MessageThread({
     <>
       {/* Message list */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-sm text-[var(--text-grey)]">No messages yet. Say hello!</p>
+          </div>
+        )}
         {grouped.map(({ day, messages: dayMsgs }) => (
           <div key={day}>
             <div className="flex items-center gap-3 my-3">
@@ -120,7 +189,9 @@ export function MessageThread({
                           : "bg-gray-100 text-[var(--text-dark)] rounded-bl-sm"
                       }`}
                     >
-                      <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                      <p className="leading-relaxed whitespace-pre-wrap break-words">
+                        {renderContent(msg.content)}
+                      </p>
                       <p className={`text-[10px] mt-1 ${isMe ? "text-white/60 text-right" : "text-gray-400"}`}>
                         {formatTime(msg.created_at)}
                       </p>
@@ -165,7 +236,7 @@ export function MessageThread({
             </svg>
           </button>
         </div>
-        <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Press Enter to send · Shift+Enter for new line</p>
+        <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Enter to send · Shift+Enter for new line</p>
       </div>
     </>
   );
