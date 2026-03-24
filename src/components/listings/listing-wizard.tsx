@@ -151,7 +151,7 @@ export function ListingWizard({ mode, listingId, initialValues }: WizardProps) {
       const ext = file.name.split(".").pop();
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { data, error } = await supabase.storage
-        .from("listing-images")
+        .from("listings")
         .upload(path, file, { cacheControl: "3600", upsert: false });
 
       if (error) {
@@ -160,7 +160,7 @@ export function ListingWizard({ mode, listingId, initialValues }: WizardProps) {
       }
 
       const { data: urlData } = supabase.storage
-        .from("listing-images")
+        .from("listings")
         .getPublicUrl(data.path);
 
       uploaded.push(urlData.publicUrl);
