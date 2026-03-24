@@ -1,5 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
+export const PAGE_SIZE = 24;
+
 export type ListingFilters = {
   q?: string;
   category?: string;
@@ -7,6 +9,7 @@ export type ListingFilters = {
   sort?: string;
   min_price?: string;
   max_price?: string;
+  offset?: number;
 };
 
 export async function getActiveListings(filters: ListingFilters = {}) {
@@ -14,13 +17,14 @@ export async function getActiveListings(filters: ListingFilters = {}) {
 
   const ascending = filters.sort === "price_asc";
   const orderBy = filters.sort === "price_asc" || filters.sort === "price_desc" ? "price" : "created_at";
+  const offset = filters.offset ?? 0;
 
   let query = supabase
     .from("listings")
     .select("id, profile_id, title, price, condition, category, images, created_at")
     .eq("status", "active")
     .order(orderBy, { ascending })
-    .limit(48);
+    .range(offset, offset + PAGE_SIZE - 1);
 
   if (filters.category) {
     query = query.eq("category", filters.category);
@@ -49,10 +53,11 @@ export async function getActiveListings(filters: ListingFilters = {}) {
 
   const { data, error } = await query;
   if (error) {
-    return [];
+    return { listings: [], hasMore: false };
   }
 
-  return data ?? [];
+  const listings = data ?? [];
+  return { listings, hasMore: listings.length === PAGE_SIZE };
 }
 
 export async function getFeaturedListings() {

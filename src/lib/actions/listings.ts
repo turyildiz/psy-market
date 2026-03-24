@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { listingSchema } from "@/lib/validators";
+import { getActiveListings, type ListingFilters } from "@/lib/data/listings";
+
+export async function fetchMoreListings(filters: ListingFilters) {
+  return getActiveListings(filters);
+}
 
 type ListingFormInput = {
   title: string;

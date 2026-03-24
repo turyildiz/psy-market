@@ -10,6 +10,7 @@ type Message = {
   sender_profile_id: string;
   created_at: string;
   read: boolean;
+  images?: string[];
 };
 
 type Props = {
@@ -70,8 +71,11 @@ export function MessageThread({
   const [text, setText] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [pendingImages, setPendingImages] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const pendingIds = useRef<Set<string>>(new Set());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -115,25 +119,76 @@ export function MessageThread({
     };
   }, [threadId]);
 
+  async function uploadImages(files: File[]): Promise<string[]> {
+    const supabase = createClient();
+    const urls: string[] = [];
+
+    for (const file of files) {
+      const ext = file.name.split(".").pop();
+      const path = `${threadId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("messages")
+        .upload(path, file, { contentType: file.type });
+
+      if (!error) {
+        const { data: urlData } = supabase.storage.from("messages").getPublicUrl(path);
+        if (urlData?.publicUrl) urls.push(urlData.publicUrl);
+      }
+    }
+
+    return urls;
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    const images = files.filter((f) => f.type.startsWith("image/")).slice(0, 4);
+    setPendingImages((prev) => [...prev, ...images].slice(0, 4));
+    e.target.value = "";
+  }
+
+  function removeImage(index: number) {
+    setPendingImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
   function handleSend() {
     const trimmed = text.trim();
-    if (!trimmed || isPending) return;
+    if ((!trimmed && pendingImages.length === 0) || isPending || isUploading) return;
 
     setError(null);
     const optimisticId = `optimistic-${Date.now()}`;
+    const localImageUrls = pendingImages.map((f) => URL.createObjectURL(f));
+
     const optimistic: Message = {
       id: optimisticId,
       content: trimmed,
       sender_profile_id: myProfileId,
       created_at: new Date().toISOString(),
       read: false,
+      images: localImageUrls.length > 0 ? localImageUrls : undefined,
     };
 
     setMessages((prev) => [...prev, optimistic]);
     setText("");
+    const filesToUpload = [...pendingImages];
+    setPendingImages([]);
 
     startTransition(async () => {
-      const result = await sendMessage(threadId, receiverProfileId, listingId, trimmed);
+      let imageUrls: string[] = [];
+
+      if (filesToUpload.length > 0) {
+        setIsUploading(true);
+        imageUrls = await uploadImages(filesToUpload);
+        setIsUploading(false);
+      }
+
+      const result = await sendMessage(
+        threadId,
+        receiverProfileId,
+        listingId,
+        trimmed,
+        imageUrls.length > 0 ? imageUrls : undefined
+      );
+
       if (result?.error) {
         setError(result.error);
         setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
@@ -142,7 +197,11 @@ export function MessageThread({
         // Replace optimistic with real id so realtime dedup works
         pendingIds.current.add(result.messageId);
         setMessages((prev) =>
-          prev.map((m) => m.id === optimisticId ? { ...m, id: result.messageId! } : m)
+          prev.map((m) =>
+            m.id === optimisticId
+              ? { ...m, id: result.messageId!, images: imageUrls.length > 0 ? imageUrls : undefined }
+              : m
+          )
         );
       }
     });
@@ -183,16 +242,34 @@ export function MessageThread({
                 return (
                   <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${
+                      className={`max-w-[75%] rounded-2xl text-sm overflow-hidden ${
                         isMe
                           ? "bg-[var(--brand)] text-white rounded-br-sm"
                           : "bg-gray-100 text-[var(--text-dark)] rounded-bl-sm"
                       }`}
                     >
-                      <p className="leading-relaxed whitespace-pre-wrap break-words">
-                        {renderContent(msg.content)}
-                      </p>
-                      <p className={`text-[10px] mt-1 ${isMe ? "text-white/60 text-right" : "text-gray-400"}`}>
+                      {msg.images && msg.images.length > 0 && (
+                        <div className={`grid gap-1 p-1 ${msg.images.length > 1 ? "grid-cols-2" : ""}`}>
+                          {msg.images.map((src, i) => (
+                            <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={src}
+                                alt=""
+                                className="rounded-xl object-cover w-full max-h-48"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                      {msg.content && (
+                        <div className="px-4 py-2.5">
+                          <p className="leading-relaxed whitespace-pre-wrap break-words">
+                            {renderContent(msg.content)}
+                          </p>
+                        </div>
+                      )}
+                      <p className={`text-[10px] pb-1.5 px-4 ${isMe ? "text-white/60 text-right" : "text-gray-400"}`}>
                         {formatTime(msg.created_at)}
                       </p>
                     </div>
@@ -210,7 +287,52 @@ export function MessageThread({
         {error && (
           <p className="text-xs text-red-500 mb-2">{error}</p>
         )}
+
+        {/* Image previews */}
+        {pendingImages.length > 0 && (
+          <div className="flex gap-2 mb-2 flex-wrap">
+            {pendingImages.map((file, i) => (
+              <div key={i} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt=""
+                  className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-500 transition"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex items-end gap-2">
+          {/* Image attach button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={pendingImages.length >= 4}
+            className="w-10 h-10 rounded-xl border border-gray-200 text-gray-400 flex items-center justify-center hover:bg-gray-50 hover:text-gray-600 transition disabled:opacity-40 flex-shrink-0"
+            title="Attach image"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -227,13 +349,20 @@ export function MessageThread({
           />
           <button
             type="button"
-            disabled={!text.trim() || isPending}
+            disabled={(!text.trim() && pendingImages.length === 0) || isPending || isUploading}
             onClick={handleSend}
             className="w-10 h-10 rounded-xl bg-[var(--brand)] text-white flex items-center justify-center hover:opacity-90 transition disabled:opacity-40 flex-shrink-0"
           >
-            <svg className="w-4 h-4 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            {isUploading ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            )}
           </button>
         </div>
         <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Enter to send · Shift+Enter for new line</p>

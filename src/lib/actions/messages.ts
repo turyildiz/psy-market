@@ -67,11 +67,15 @@ export async function sendMessage(
   threadId: string,
   receiverProfileId: string,
   listingId: string,
-  content: string
+  content: string,
+  images?: string[]
 ) {
   const trimmed = content.trim();
-  if (!trimmed || trimmed.length > 2000) {
-    return { error: "Message must be between 1 and 2000 characters" };
+  if (!trimmed && (!images || images.length === 0)) {
+    return { error: "Message cannot be empty" };
+  }
+  if (trimmed.length > 2000) {
+    return { error: "Message must be 2000 characters or less" };
   }
 
   const supabase = await createServerSupabaseClient();
@@ -84,6 +88,7 @@ export async function sendMessage(
     sender_profile_id: profileId,
     receiver_profile_id: receiverProfileId,
     content: trimmed,
+    ...(images && images.length > 0 ? { images } : {}),
   }).select("id").single();
 
   if (error) return { error: "Failed to send message" };

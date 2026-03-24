@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getActiveListings, getFeaturedListings } from "@/lib/data/listings";
 import { formatPrice } from "@/lib/utils";
+import { LoadMoreListings } from "@/components/browse/load-more-listings";
 
 type BrowsePageProps = {
   searchParams: Promise<{
@@ -120,9 +121,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
   // Music gear page
   if (isMusicGear) {
-    const listings = await getActiveListings({ q: params.q, category: "gear" });
+    const { listings: gearListings } = await getActiveListings({ q: params.q, category: "gear" });
 
-    const listingCards: GearCard[] = listings.map((listing) => ({
+    const listingCards: GearCard[] = gearListings.map((listing) => ({
       id: `listing-${listing.id}`,
       title: listing.title,
       subtitle: `Condition: ${listing.condition.replace("_", " ")}`,
@@ -242,15 +243,17 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   }
 
   // General browse page
-  const [listings, featuredListings] = await Promise.all([
-    getActiveListings({
-      q: params.q,
-      category: params.category,
-      condition: params.condition,
-      sort: params.sort,
-      min_price: params.min_price,
-      max_price: params.max_price,
-    }),
+  const filters = {
+    q: params.q,
+    category: params.category,
+    condition: params.condition,
+    sort: params.sort,
+    min_price: params.min_price,
+    max_price: params.max_price,
+  };
+
+  const [{ listings, hasMore }, featuredListings] = await Promise.all([
+    getActiveListings(filters),
     getFeaturedListings(),
   ]);
 
@@ -277,7 +280,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           <div>
             <h1 className="text-3xl font-bold text-[var(--text-dark)]" style={{ fontFamily: "var(--font-display)" }}>Browse Listings</h1>
             <p className="text-sm text-[var(--text-grey)] mt-1">
-              {listings.length} {listings.length === 1 ? "listing" : "listings"} found
+              {listings.length}{hasMore ? "+" : ""} {listings.length === 1 ? "listing" : "listings"} found
               {activeCount > 0 && " · filters active"}
             </p>
           </div>
@@ -402,29 +405,12 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           </div>
         )}
 
-        {/* Grid */}
-        {listings.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-12 text-center shadow-[var(--shadow-card)]">
-            <p className="text-xl font-semibold text-[var(--text-dark)] mb-2">No listings found</p>
-            <p className="text-[var(--text-grey)] text-sm">Try adjusting your filters or search terms.</p>
-            <Link href="/browse" className="mt-4 inline-block text-sm text-[var(--brand)] hover:underline font-medium">Clear filters</Link>
-          </div>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listings.map((listing) => (
-              <Link key={listing.id} href={`/listing/${listing.id}`} className="product-card">
-                <div className="product-card-img h-52">
-                  <Image src={listing.images?.[0] || "/modem.jpg"} alt={listing.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
-                </div>
-                <div className="product-card-info">
-                  <h4>{listing.title}</h4>
-                  <div className="category capitalize">{listing.category} · {listing.condition.replace("_", " ")}</div>
-                  <div className="price">{formatPrice(listing.price)}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Grid with infinite scroll */}
+        <LoadMoreListings
+          initialListings={listings}
+          initialHasMore={hasMore}
+          filters={filters}
+        />
       </div>
     </div>
   );
