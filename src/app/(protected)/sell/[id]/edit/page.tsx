@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { ListingForm } from "@/components/listings/listing-form";
+import { ListingWizard } from "@/components/listings/listing-wizard";
 
 type EditListingPageProps = {
   params: Promise<{ id: string }>;
@@ -41,7 +41,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   return (
     <div className="min-h-[60vh] py-10 px-6 max-w-[1200px] mx-auto">
-      <ListingForm mode="edit" listingId={id} initialValues={listing} />
+      <ListingWizard mode="edit" listingId={id} initialValues={listing} />
     </div>
   );
 }
