@@ -138,31 +138,36 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     const listingGridCards = filteredCards.length > 0 ? filteredCards : FALLBACK_MUSIC_GEAR;
 
     return (
-      <div className="min-h-[60vh] bg-[#d7dbdf] py-8 md:py-10">
+      <div className="min-h-[60vh] bg-[#d7dbdf] py-6 md:py-10">
         <div className="mx-auto w-full max-w-[1220px] px-4 md:px-6">
-          <section className="relative overflow-hidden rounded-[24px] md:rounded-[28px] shadow-[0_24px_50px_rgba(8,13,20,0.24)]">
-            <div className="relative h-[220px] md:h-[320px]">
+
+          {/* Hero */}
+          <section className="relative overflow-hidden rounded-[20px] md:rounded-[28px] shadow-[0_24px_50px_rgba(8,13,20,0.24)]">
+            <div className="relative h-[180px] sm:h-[240px] md:h-[320px]">
               <Image src={MUSIC_GEAR_HERO_IMAGE} alt="Music gear category banner" fill className="object-cover" priority />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/20" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_26%,rgba(23,169,184,0.24),transparent_58%)]" />
-              <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10">
-                <h1 className="font-[Sora] text-4xl font-bold text-white md:text-5xl">Music Gear</h1>
-                <p className="mt-2 max-w-2xl text-base text-white/85 md:text-2xl">Explore synths, controllers, and everything you need to shape your sound.</p>
+              <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 md:bottom-10 md:left-10">
+                <h1 className="font-[Sora] text-2xl sm:text-4xl font-bold text-white md:text-5xl">Music Gear</h1>
+                <p className="mt-1 sm:mt-2 max-w-2xl text-sm sm:text-base text-white/85 md:text-2xl line-clamp-2 sm:line-clamp-none">
+                  Explore synths, controllers, and everything you need to shape your sound.
+                </p>
               </div>
             </div>
           </section>
 
-          <section className="mt-6 rounded-2xl border border-white/65 bg-[#edf0f2] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] md:px-5">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <p className="text-sm font-semibold text-[#3d434b]">Filter by:</p>
-              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          {/* Filter bar */}
+          <section className="mt-4 md:mt-6 rounded-2xl border border-white/65 bg-[#edf0f2] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] md:px-5">
+            <div className="flex items-center gap-2 md:gap-3">
+              <p className="hidden sm:block text-sm font-semibold text-[#3d434b] shrink-0">Filter by:</p>
+              <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none w-full">
                 {GEAR_FILTERS.map((filter) => {
                   const isActive = activeGearFilter === filter.id;
                   return (
                     <Link
                       key={filter.id}
                       href={createGearFilterHref(params.q, filter.id)}
-                      className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                      className={`whitespace-nowrap rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold transition shrink-0 ${
                         isActive
                           ? "bg-[#f0c418] text-[#171717] shadow-[0_6px_18px_rgba(240,196,24,0.32)]"
                           : "bg-[#dfe3e8] text-[#383e46] hover:bg-[#d4d9df]"
@@ -176,13 +181,32 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             </div>
           </section>
 
-          <section className="mt-11">
-            <h2 className="font-[Sora] text-3xl font-semibold text-[#1a1d23]">Featured Gear</h2>
-            <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Featured Gear — horizontal scroll on mobile, 3-col grid on desktop */}
+          <section className="mt-8 md:mt-11">
+            <h2 className="font-[Sora] text-xl sm:text-2xl md:text-3xl font-semibold text-[#1a1d23]">Featured Gear</h2>
+
+            {/* Mobile: horizontal scroll */}
+            <div className="mt-4 flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 md:hidden scrollbar-none">
+              {featuredCards.map((card) => (
+                <Link key={`m-${card.id}`} href={card.href} className="group shrink-0 w-52 block">
+                  <div className="relative aspect-square overflow-hidden rounded-[14px] bg-[#cad3db]">
+                    <Image src={card.image} alt={card.title} fill className="object-cover transition duration-500 group-hover:scale-[1.04]" sizes="208px" />
+                  </div>
+                  <div className="mt-2.5 space-y-0.5">
+                    <h3 className="font-[Sora] text-sm font-semibold text-[#111317] line-clamp-1">{card.title}</h3>
+                    <p className="text-xs text-[#6b7179]">{card.subtitle}</p>
+                    <p className="font-[Sora] text-lg font-bold text-[#d39f00]">{card.priceLabel}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop: 3-col grid */}
+            <div className="hidden md:grid mt-5 grid-cols-3 gap-6">
               {featuredCards.map((card) => (
                 <Link key={card.id} href={card.href} className="group block">
                   <div className="relative aspect-[4/4] overflow-hidden rounded-[16px] bg-[#cad3db]">
-                    <Image src={card.image} alt={card.title} fill className="object-cover transition duration-500 group-hover:scale-[1.04]" />
+                    <Image src={card.image} alt={card.title} fill className="object-cover transition duration-500 group-hover:scale-[1.04]" sizes="(max-width: 1220px) 33vw, 390px" />
                   </div>
                   <div className="mt-3 space-y-1">
                     <h3 className="font-[Sora] text-xl font-semibold text-[#111317]">{card.title}</h3>
@@ -194,22 +218,24 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             </div>
           </section>
 
-          <section className="mt-14">
-            <h2 className="font-[Sora] text-3xl font-semibold text-[#1a1d23]">All Music Gear</h2>
-            <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-3 lg:grid-cols-5">
+          {/* All Music Gear grid */}
+          <section className="mt-10 md:mt-14">
+            <h2 className="font-[Sora] text-xl sm:text-2xl md:text-3xl font-semibold text-[#1a1d23]">All Music Gear</h2>
+            <div className="mt-4 md:mt-5 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-7 md:grid-cols-3 md:gap-x-5 md:gap-y-8 lg:grid-cols-5">
               {listingGridCards.map((card) => (
                 <Link key={`grid-${card.id}`} href={card.href} className="group block">
-                  <div className="relative aspect-[4/4] overflow-hidden rounded-[14px] bg-[#c8d1da]">
-                    <Image src={card.image} alt={card.title} fill className="object-cover transition duration-500 group-hover:scale-[1.05]" />
+                  <div className="relative aspect-square overflow-hidden rounded-[12px] md:rounded-[14px] bg-[#c8d1da]">
+                    <Image src={card.image} alt={card.title} fill className="object-cover transition duration-500 group-hover:scale-[1.05]" sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw" />
                   </div>
                   <div className="mt-2 space-y-0.5">
-                    <h3 className="font-[Sora] text-base font-semibold text-[#15191f] line-clamp-1">{card.title}</h3>
-                    <p className="text-base text-[#6f7680]">{card.priceLabel}</p>
+                    <h3 className="font-[Sora] text-sm md:text-base font-semibold text-[#15191f] line-clamp-1">{card.title}</h3>
+                    <p className="text-sm md:text-base text-[#6f7680]">{card.priceLabel}</p>
                   </div>
                 </Link>
               ))}
             </div>
           </section>
+
         </div>
       </div>
     );
