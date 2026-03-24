@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getListingById } from "@/lib/data/listings";
 import { formatPrice } from "@/lib/utils";
+import { ContactSellerButton } from "@/components/listings/contact-seller-button";
 
 type ListingDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -78,9 +79,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             ) : null}
           </div>
 
-          <button className="w-full h-12 rounded-full bg-[var(--brand)] text-white font-semibold text-base shadow-[var(--shadow-card)] hover:opacity-90 transition">
-            Contact Seller
-          </button>
+          <ContactSellerButton listingId={listing.id} sellerProfileId={listing.profile_id} />
         </div>
       </div>
     </div>
