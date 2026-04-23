@@ -107,8 +107,10 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
           setHandleStatus("taken");
           setHandleMessage(data.message ?? "Not available");
         }
-      } catch {
-        setHandleStatus("available");
+      } catch (err) {
+        console.error("handle check failed:", err);
+        setHandleStatus("idle");
+        setHandleMessage("");
       }
     }, 400);
   // eslint-disable-next-line react-hooks/exhaustive-deps

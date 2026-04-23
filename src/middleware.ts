@@ -17,6 +17,11 @@ const adminRoutes = ["/admin"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Pass through all API routes without auth check
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   // Refresh Supabase auth session
   const { supabase, user, response } = await updateSession(request);
 
