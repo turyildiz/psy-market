@@ -102,7 +102,7 @@ export default async function DashboardPage() {
                 <div className="p-3">
                   {seller && (
                     <Link
-                      href={`/seller/${seller.handle}`}
+                      href={`/${seller.handle}`}
                       onClick={(e) => e.stopPropagation()}
                       className="flex items-center gap-1.5 mb-1.5 group/seller"
                     >

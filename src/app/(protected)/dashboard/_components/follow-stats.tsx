@@ -109,7 +109,7 @@ export function FollowStats({ followerCount, followingCount, followers, followin
                   {list.map((p) => (
                     <li key={p.id}>
                       <Link
-                        href={`/seller/${p.handle}`}
+                        href={`/${p.handle}`}
                         onClick={() => setOpen(false)}
                         className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors"
                       >

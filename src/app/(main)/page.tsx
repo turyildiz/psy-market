@@ -71,7 +71,7 @@ export default function Home() {
           </div>
           <div className="bento-grid reveal">
             {/* Feature Card (Left) — Featured Seller */}
-            <Link href="/seller/yacxilan" className="feature-card" style={{ textDecoration: 'none' }}>
+            <Link href="/yacxilan" className="feature-card" style={{ textDecoration: 'none' }}>
               <div className="feature-card-bg" style={{ backgroundImage: `url('https://uabuhtrtommkfmlhseul.supabase.co/storage/v1/object/public/headers/yacxilan/header.jpg')`, backgroundPosition: 'center top' }}></div>
               <div className="feature-card-overlay"></div>
               <div className="feature-card-content">

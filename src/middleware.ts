@@ -5,7 +5,6 @@ const publicRoutes = [
   "/",
   "/browse",
   "/listing",
-  "/seller",
   "/events",
   "/privacy",
   "/terms",

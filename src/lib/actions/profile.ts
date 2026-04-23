@@ -74,9 +74,9 @@ export async function updateProfile(input: UpdateProfileInput) {
   }
 
   revalidatePath("/dashboard");
-  revalidatePath(`/seller/${input.handle}`);
+  revalidatePath(`/${input.handle}`);
   if (input.handle !== profile.handle) {
-    revalidatePath(`/seller/${profile.handle}`);
+    revalidatePath(`/${profile.handle}`);
   }
 
   return { success: true };

@@ -99,7 +99,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                         {profile && (
                           <div className="flex items-center gap-1.5 mt-2">
                             <Link
-                              href={`/seller/${profile.handle}`}
+                              href={`/${profile.handle}`}
                               className="text-xs text-blue-600 hover:underline font-medium"
                               target="_blank"
                             >

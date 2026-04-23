@@ -39,7 +39,7 @@ export default async function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3">
                   <a
-                    href={`/seller/${profile.handle}`}
+                    href={`/${profile.handle}`}
                     target="_blank"
                     className="text-blue-600 hover:underline"
                   >

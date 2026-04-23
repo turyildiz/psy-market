@@ -156,7 +156,7 @@ export function OnboardingForm({
             )}
             <p className="text-xs text-[var(--text-grey)]">
               3-30 characters. Letters, numbers, and underscores only. This will
-              be your URL: psy.market/seller/{handle || "..."}
+              be your URL: psy.market/{handle || "..."}
             </p>
           </div>
 

@@ -124,7 +124,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             <p className="text-xs font-semibold text-[var(--text-grey)] uppercase tracking-wide mb-2">Seller</p>
             <p className="font-semibold text-[var(--text-dark)]">{profile?.display_name ?? "Unknown"}</p>
             {profile?.handle ? (
-              <Link href={`/seller/${profile.handle}`} className="text-sm text-[var(--brand)] font-medium hover:opacity-75 transition">
+              <Link href={`/${profile.handle}`} className="text-sm text-[var(--brand)] font-medium hover:opacity-75 transition">
                 @{profile.handle}
               </Link>
             ) : null}

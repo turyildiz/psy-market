@@ -33,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .limit(500);
 
   const profileRoutes: MetadataRoute.Sitemap = (profiles ?? []).map((p) => ({
-    url: `${baseUrl}/seller/${p.handle}`,
+    url: `${baseUrl}/${p.handle}`,
     lastModified: new Date(p.updated_at),
     changeFrequency: "weekly",
     priority: 0.6,

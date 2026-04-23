@@ -22,7 +22,7 @@ export async function followSeller(followingProfileId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath(`/seller/[handle]`, "page");
+  revalidatePath(`/[handle]`, "page");
   revalidatePath("/dashboard");
   return { success: true };
 }
@@ -48,7 +48,7 @@ export async function unfollowSeller(followingProfileId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath(`/seller/[handle]`, "page");
+  revalidatePath(`/[handle]`, "page");
   revalidatePath("/dashboard");
   return { success: true };
 }
