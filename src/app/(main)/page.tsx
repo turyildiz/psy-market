@@ -1,26 +1,25 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect } from "react";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { ScrollRevealSetup } from "@/components/home/scroll-reveal-setup";
+import { FeaturedSellerCarousel } from "@/components/home/featured-seller-carousel";
 
-export default function Home() {
-  useEffect(() => {
-    // Scroll reveal observer
-    const revealElements = document.querySelectorAll(".reveal");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
-    );
+async function getFeaturedSellers(category: string) {
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase
+    .from("featured_sellers")
+    .select("image_url, profile:profiles(handle, display_name, bio, location)")
+    .eq("category", category)
+    .order("position");
 
-    revealElements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  return (data ?? []).map((row) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile as any;
+    return { ...profile, image_url: row.image_url };
+  });
+}
+
+export default async function Home() {
+  const fashionSellers = await getFeaturedSellers("clothing");
 
   return (
     <>
@@ -62,24 +61,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============ 1. TRENDING: FESTIVAL SEASON ============ */}
+      <ScrollRevealSetup />
+
+      {/* ============ 1. FASHION — FEATURED SELLERS ============ */}
       <section className="section">
         <div className="container">
           <div className="section-header reveal">
-            <h2 className="section-title">Trending: Festival Season</h2>
-            <a href="#" className="view-all">View All <span>&rarr;</span></a>
+            <h2 className="section-title">Trending: Festival Fashion</h2>
+            <Link href="/browse?category=clothing" className="view-all">View All <span>&rarr;</span></Link>
           </div>
           <div className="bento-grid reveal">
-            {/* Feature Card (Left) — Featured Seller */}
-            <Link href="/yacxilan" className="feature-card" style={{ textDecoration: 'none' }}>
-              <div className="feature-card-bg" style={{ backgroundImage: `url('https://uabuhtrtommkfmlhseul.supabase.co/storage/v1/object/public/headers/yacxilan/header.jpg')`, backgroundPosition: 'center top' }}></div>
-              <div className="feature-card-overlay"></div>
-              <div className="feature-card-content">
-                <span className="feature-tag">Featured Seller</span>
-                <h3>Ya&apos;cxilan</h3>
-                <p>Handcrafted festival fashion rooted in the ancient wisdom of Mesoamerica. Worn at Boom, Ozora and beyond.</p>
-              </div>
-            </Link>
+            {/* Featured Seller Carousel (Left) */}
+            <FeaturedSellerCarousel sellers={fashionSellers} />
             {/* Small Cards */}
             <div className="product-card">
               <div className="product-card-img">
