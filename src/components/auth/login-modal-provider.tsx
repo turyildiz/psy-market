@@ -80,6 +80,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
   const [error, setError] = useState<string | null>(() => getAuthErrorFromUrl());
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(() => getNextPathFromUrl());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -122,6 +123,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     setHandleStatus("idle");
     setHandleMessage("");
     setLoading(false);
+    setLoginSuccess(false);
     setSignupStep(1);
   }, []);
 
@@ -162,9 +164,9 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     }
 
     const destination = returnTo ?? "/dashboard";
-    setLoading(false);
+    setLoginSuccess(true);
     clearAuthQueryParams();
-    window.location.assign(destination);
+    setTimeout(() => window.location.assign(destination), 900);
   }
 
   async function handleEmailSignup(e: React.FormEvent) {
@@ -282,9 +284,9 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
               <button
                 className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded transition duration-200 text-lg uppercase tracking-wider hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
-                disabled={loading}
+                disabled={loading || loginSuccess}
               >
-                {loading ? "Logging in..." : "Log In"}
+                {loginSuccess ? "Welcome back ✓" : loading ? "Logging in..." : "Log In"}
               </button>
             </form>
 
