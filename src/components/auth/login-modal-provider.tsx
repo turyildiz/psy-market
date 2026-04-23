@@ -240,7 +240,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Email Address
                 </label>
                 <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-red-500" : "border-zinc-800"}`}
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-orange-500" : "border-zinc-800"}`}
                   id="login-email"
                   name="email"
                   placeholder="name@example.com"
@@ -261,7 +261,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   </a>
                 </div>
                 <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-red-500" : "border-zinc-800"}`}
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-orange-500" : "border-zinc-800"}`}
                   id="login-password"
                   name="password"
                   placeholder="••••••••"
@@ -321,7 +321,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Display Name
                 </label>
                 <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.displayName ? "border-red-500" : "border-zinc-800"}`}
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.displayName ? "border-orange-500" : "border-zinc-800"}`}
                   id="signup-displayname"
                   placeholder="Your name"
                   type="text"
@@ -339,7 +339,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                 <div className="relative flex items-center">
                   <span className="absolute left-4 text-gray-500 select-none">@</span>
                   <input
-                    className={`w-full pl-8 pr-10 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none lowercase ${fieldErrors.handle ? "border-red-500" : "border-zinc-800"}`}
+                    className={`w-full pl-8 pr-10 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none lowercase ${fieldErrors.handle ? "border-orange-500" : "border-zinc-800"}`}
                     id="signup-handle"
                     placeholder="yourhandle"
                     type="text"
@@ -368,7 +368,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Email Address
                 </label>
                 <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-red-500" : "border-zinc-800"}`}
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-orange-500" : "border-zinc-800"}`}
                   id="signup-email"
                   placeholder="name@example.com"
                   type="email"
@@ -383,7 +383,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Password
                 </label>
                 <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-red-500" : "border-zinc-800"}`}
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-orange-500" : "border-zinc-800"}`}
                   id="signup-password"
                   placeholder="At least 6 characters"
                   type="password"
@@ -398,7 +398,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Confirm Password
                 </label>
                 <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.confirmPassword ? "border-red-500" : "border-zinc-800"}`}
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.confirmPassword ? "border-orange-500" : "border-zinc-800"}`}
                   id="signup-confirm"
                   placeholder="Repeat your password"
                   type="password"
