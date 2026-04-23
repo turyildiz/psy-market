@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AuthModal } from "./auth-modal";
 
@@ -68,6 +69,7 @@ export function useLoginModal() {
 }
 
 export function LoginModalProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [mode, setMode] = useState<ModalMode>(() => getAuthModalModeFromUrl());
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState("");
@@ -166,7 +168,11 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     const destination = returnTo ?? "/dashboard";
     setLoginSuccess(true);
     clearAuthQueryParams();
-    setTimeout(() => window.location.assign(destination), 900);
+    router.refresh();
+    setTimeout(() => {
+      close();
+      router.push(destination);
+    }, 800);
   }
 
   async function handleEmailSignup(e: React.FormEvent) {
