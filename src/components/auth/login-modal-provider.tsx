@@ -92,15 +92,20 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     }
     setHandleStatus("checking");
     debounceRef.current = setTimeout(async () => {
-      const params = new URLSearchParams({ handle, email });
-      const res = await fetch(`/api/check-handle?${params}`);
-      const data = await res.json();
-      if (data.available) {
-        setHandleStatus(data.reserved_for_you ? "reserved_for_you" : "available");
-        setHandleMessage(data.reserved_for_you ? "Reserved for you!" : "");
-      } else {
-        setHandleStatus("taken");
-        setHandleMessage(data.message ?? "Not available");
+      try {
+        const params = new URLSearchParams({ handle, email });
+        const res = await fetch(`/api/check-handle?${params}`);
+        if (!res.ok) throw new Error("check failed");
+        const data = await res.json();
+        if (data.available) {
+          setHandleStatus(data.reserved_for_you ? "reserved_for_you" : "available");
+          setHandleMessage(data.reserved_for_you ? "Reserved for you!" : "");
+        } else {
+          setHandleStatus("taken");
+          setHandleMessage(data.message ?? "Not available");
+        }
+      } catch {
+        setHandleStatus("available");
       }
     }, 400);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -386,7 +391,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   <button
                     className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded transition duration-200 text-base uppercase tracking-wider hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                     type="submit"
-                    disabled={handleStatus === "taken" || handleStatus === "checking"}
+                    disabled={handleStatus === "taken"}
                   >
                     Continue
                   </button>
