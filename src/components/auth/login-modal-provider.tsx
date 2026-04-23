@@ -69,6 +69,7 @@ export function useLoginModal() {
 
 export function LoginModalProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<ModalMode>(() => getAuthModalModeFromUrl());
+  const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -116,6 +117,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     setHandleStatus("idle");
     setHandleMessage("");
     setLoading(false);
+    setSignupStep(1);
   }, []);
 
   const openLogin = useCallback(() => {
@@ -299,150 +301,204 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
       {mode === "signup" && (
         <AuthModal onClose={close}>
           <div className="w-full max-w-md p-8">
-            <div className="mb-8 flex justify-center">
+            <div className="mb-6 flex justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Psy.Market" className="h-16 w-auto" />
+              <img src="/logo.png" alt="Psy.Market" className="h-14 w-auto" />
             </div>
-            <div className="mb-10">
-              <h1 className="text-3xl font-bold text-white mb-2">Join psy.market</h1>
-              <p className="text-gray-400">
-                Create your account and start exploring.
-              </p>
+
+            {/* Step indicator */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="flex-1 h-1 rounded-full bg-orange-500" />
+              <div className={`flex-1 h-1 rounded-full transition-colors duration-300 ${signupStep === 2 ? "bg-orange-500" : "bg-zinc-700"}`} />
             </div>
-            <form onSubmit={handleEmailSignup} className="space-y-4" noValidate>
-              {error && (
-                <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
-                  {error}
+
+            {signupStep === 1 ? (
+              <>
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold text-white mb-1">Create your identity</h1>
+                  <p className="text-gray-400 text-sm">Choose your name and a unique handle.</p>
                 </div>
-              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-displayname">
-                  Display Name
-                </label>
-                <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.displayName ? "border-orange-500" : "border-zinc-800"}`}
-                  id="signup-displayname"
-                  placeholder="Your name"
-                  type="text"
-                  maxLength={50}
-                  value={displayName}
-                  onChange={(e) => { setDisplayName(e.target.value); setFieldErrors((p) => ({ ...p, displayName: "" })); }}
-                />
-                {fieldErrors.displayName && <p className="mt-1 text-xs text-red-400">{fieldErrors.displayName}</p>}
-              </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const errs: Record<string, string> = {};
+                    if (!displayName.trim()) errs.displayName = "Display name is required";
+                    if (!handle || handle.length < 3) errs.handle = "Handle must be at least 3 characters";
+                    else if (handleStatus === "taken") errs.handle = handleMessage || "That handle is not available";
+                    else if (handleStatus === "checking") errs.handle = "Please wait…";
+                    else if (handleStatus === "idle") errs.handle = "Please enter a handle";
+                    if (Object.keys(errs).length) { setFieldErrors(errs); return; }
+                    setFieldErrors({});
+                    setSignupStep(2);
+                  }}
+                  className="space-y-4"
+                  noValidate
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-displayname">
+                      Display Name
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.displayName ? "border-orange-500" : "border-zinc-800"}`}
+                      id="signup-displayname"
+                      placeholder="Your name"
+                      type="text"
+                      maxLength={50}
+                      autoFocus
+                      value={displayName}
+                      onChange={(e) => { setDisplayName(e.target.value); setFieldErrors((p) => ({ ...p, displayName: "" })); }}
+                    />
+                    {fieldErrors.displayName && <p className="mt-1 text-xs text-orange-400">{fieldErrors.displayName}</p>}
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-handle">
-                  Handle
-                </label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-4 text-gray-500 select-none">@</span>
-                  <input
-                    className={`w-full pl-8 pr-10 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none lowercase ${fieldErrors.handle ? "border-orange-500" : "border-zinc-800"}`}
-                    id="signup-handle"
-                    placeholder="yourhandle"
-                    type="text"
-                    maxLength={30}
-                    value={handle}
-                    onChange={(e) => { setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")); setFieldErrors((p) => ({ ...p, handle: "" })); }}
-                  />
-                  <span className="absolute right-3 text-lg">
-                    {handleStatus === "checking" && <span className="text-gray-400 text-sm animate-pulse">...</span>}
-                    {(handleStatus === "available" || handleStatus === "reserved_for_you") && <span className="text-green-400">✓</span>}
-                    {handleStatus === "taken" && <span className="text-red-400">✗</span>}
-                  </span>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-handle">
+                      Handle
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-4 text-gray-500 select-none">@</span>
+                      <input
+                        className={`w-full pl-8 pr-10 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.handle ? "border-orange-500" : "border-zinc-800"}`}
+                        id="signup-handle"
+                        placeholder="yourhandle"
+                        type="text"
+                        maxLength={30}
+                        value={handle}
+                        onChange={(e) => { setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")); setFieldErrors((p) => ({ ...p, handle: "" })); }}
+                      />
+                      <span className="absolute right-3 text-lg">
+                        {handleStatus === "checking" && <span className="text-gray-400 text-sm animate-pulse">...</span>}
+                        {(handleStatus === "available" || handleStatus === "reserved_for_you") && <span className="text-green-400">✓</span>}
+                        {handleStatus === "taken" && <span className="text-orange-400">✗</span>}
+                      </span>
+                    </div>
+                    {fieldErrors.handle
+                      ? <p className="mt-1 text-xs text-orange-400">{fieldErrors.handle}</p>
+                      : handleStatus === "taken"
+                        ? <p className="mt-1 text-xs text-orange-400">{handleMessage}</p>
+                        : (handleStatus === "available" || handleStatus === "reserved_for_you")
+                          ? <p className="mt-1 text-xs text-green-400">{handleStatus === "reserved_for_you" ? "Reserved for you!" : "Available"}</p>
+                          : <p className="mt-1 text-xs text-gray-500">psy.market/@{handle || "yourhandle"}</p>
+                    }
+                  </div>
+
+                  <button
+                    className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded transition duration-200 text-base uppercase tracking-wider hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                    type="submit"
+                    disabled={handleStatus === "taken" || handleStatus === "checking"}
+                  >
+                    Continue
+                  </button>
+                </form>
+
+                {/* Divider */}
+                <div className="relative my-5">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-zinc-800" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-black px-2 text-gray-500">or</span>
+                  </div>
                 </div>
-                {fieldErrors.handle
-                  ? <p className="mt-1 text-xs text-red-400">{fieldErrors.handle}</p>
-                  : handleStatus === "taken"
-                    ? <p className="mt-1 text-xs text-red-400">{handleMessage}</p>
-                    : (handleStatus === "available" || handleStatus === "reserved_for_you")
-                      ? <p className="mt-1 text-xs text-green-400">{handleStatus === "reserved_for_you" ? "Reserved for you!" : "Available"}</p>
-                      : <p className="mt-1 text-xs text-gray-500">psy.market/@{handle || "yourhandle"}</p>
-                }
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-email">
-                  Email Address
-                </label>
-                <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-orange-500" : "border-zinc-800"}`}
-                  id="signup-email"
-                  placeholder="name@example.com"
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
-                />
-                {fieldErrors.email && <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>}
-              </div>
+                <button
+                  type="button"
+                  onClick={handleGoogleSignup}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white font-medium hover:bg-zinc-800 transition duration-200"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  </svg>
+                  Continue with Google
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold text-white mb-1">Secure your account</h1>
+                  <p className="text-gray-400 text-sm">
+                    Almost there,{" "}
+                    <span className="text-orange-400">@{handle}</span>.
+                  </p>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-password">
-                  Password
-                </label>
-                <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-orange-500" : "border-zinc-800"}`}
-                  id="signup-password"
-                  placeholder="At least 6 characters"
-                  type="password"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
-                />
-                {fieldErrors.password && <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>}
-              </div>
+                <form onSubmit={handleEmailSignup} className="space-y-4" noValidate>
+                  {error && (
+                    <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
+                      {error}
+                    </div>
+                  )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-confirm">
-                  Confirm Password
-                </label>
-                <input
-                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.confirmPassword ? "border-orange-500" : "border-zinc-800"}`}
-                  id="signup-confirm"
-                  placeholder="Repeat your password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors((p) => ({ ...p, confirmPassword: "" })); }}
-                />
-                {fieldErrors.confirmPassword && <p className="mt-1 text-xs text-red-400">{fieldErrors.confirmPassword}</p>}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-email">
+                      Email Address
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-orange-500" : "border-zinc-800"}`}
+                      id="signup-email"
+                      placeholder="name@example.com"
+                      type="email"
+                      autoFocus
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                    />
+                    {fieldErrors.email && <p className="mt-1 text-xs text-orange-400">{fieldErrors.email}</p>}
+                  </div>
 
-              <button
-                className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded transition duration-200 text-lg uppercase tracking-wider hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                type="submit"
-                disabled={loading || handleStatus === "taken" || handleStatus === "checking"}
-              >
-                {loading ? "Creating account..." : "Create Account"}
-              </button>
-            </form>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-password">
+                      Password
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-orange-500" : "border-zinc-800"}`}
+                      id="signup-password"
+                      placeholder="At least 6 characters"
+                      type="password"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                    />
+                    {fieldErrors.password && <p className="mt-1 text-xs text-orange-400">{fieldErrors.password}</p>}
+                  </div>
 
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-zinc-800" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-black px-2 text-gray-500">or</span>
-              </div>
-            </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-confirm">
+                      Confirm Password
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.confirmPassword ? "border-orange-500" : "border-zinc-800"}`}
+                      id="signup-confirm"
+                      placeholder="Repeat your password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors((p) => ({ ...p, confirmPassword: "" })); }}
+                    />
+                    {fieldErrors.confirmPassword && <p className="mt-1 text-xs text-orange-400">{fieldErrors.confirmPassword}</p>}
+                  </div>
 
-            {/* Google OAuth */}
-            <button
-              type="button"
-              onClick={handleGoogleSignup}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white font-medium hover:bg-zinc-800 transition duration-200"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-              </svg>
-              Continue with Google
-            </button>
+                  <button
+                    className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded transition duration-200 text-base uppercase tracking-wider hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating account..." : "Create Account"}
+                  </button>
 
-            <p className="mt-6 text-center text-sm text-gray-400">
+                  <button
+                    type="button"
+                    onClick={() => { setSignupStep(1); setFieldErrors({}); setError(null); }}
+                    className="w-full text-sm text-gray-500 hover:text-gray-300 transition py-1"
+                  >
+                    ← Back
+                  </button>
+                </form>
+              </>
+            )}
+
+            <p className="mt-5 text-center text-sm text-gray-400">
               Already have an account?{" "}
               <button
                 type="button"
