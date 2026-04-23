@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -69,16 +70,16 @@ export default function Home() {
             <a href="#" className="view-all">View All <span>&rarr;</span></a>
           </div>
           <div className="bento-grid reveal">
-            {/* Feature Card (Left) */}
-            <div className="feature-card">
-              <div className="feature-card-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1529651737508-66e99d0e0d44?w=800&q=80')` }}></div>
+            {/* Feature Card (Left) — Featured Seller */}
+            <Link href="/seller/yacxilan" className="feature-card" style={{ textDecoration: 'none' }}>
+              <div className="feature-card-bg" style={{ backgroundImage: `url('https://uabuhtrtommkfmlhseul.supabase.co/storage/v1/object/public/headers/yacxilan/header.jpg')`, backgroundPosition: 'center top' }}></div>
               <div className="feature-card-overlay"></div>
               <div className="feature-card-content">
-                <span className="feature-tag">Curated Collection</span>
-                <h3>UV Reactive Festival Wear</h3>
-                <p>Glow under blacklight with handcrafted UV-reactive clothing designed for the dancefloor.</p>
+                <span className="feature-tag">Featured Seller</span>
+                <h3>Ya&apos;cxilan</h3>
+                <p>Handcrafted festival fashion rooted in the ancient wisdom of Mesoamerica. Worn at Boom, Ozora and beyond.</p>
               </div>
-            </div>
+            </Link>
             {/* Small Cards */}
             <div className="product-card">
               <div className="product-card-img">
