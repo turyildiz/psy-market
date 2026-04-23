@@ -77,6 +77,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
   const [handleStatus, setHandleStatus] = useState<"idle" | "checking" | "available" | "taken" | "reserved_for_you">("idle");
   const [handleMessage, setHandleMessage] = useState("");
   const [error, setError] = useState<string | null>(() => getAuthErrorFromUrl());
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(() => getNextPathFromUrl());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -106,6 +107,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
 
   const resetForm = useCallback(() => {
     setError(null);
+    setFieldErrors({});
     setEmail("");
     setPassword("");
     setConfirmPassword("");
@@ -136,6 +138,11 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const errs: Record<string, string> = {};
+    if (!email) errs.email = "Email is required";
+    if (!password) errs.password = "Password is required";
+    if (Object.keys(errs).length) { setFieldErrors(errs); return; }
+    setFieldErrors({});
     setLoading(true);
 
     const supabase = createClient();
@@ -156,31 +163,18 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
   async function handleEmailSignup(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (!displayName.trim()) {
-      setError("Display name is required");
-      return;
-    }
-    if (!handle || handle.length < 3) {
-      setError("Handle must be at least 3 characters");
-      return;
-    }
-    if (handleStatus === "taken") {
-      setError(handleMessage || "That handle is not available");
-      return;
-    }
-    if (handleStatus === "checking") {
-      setError("Please wait while we check your handle");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
+    const errs: Record<string, string> = {};
+    if (!displayName.trim()) errs.displayName = "Display name is required";
+    if (!handle || handle.length < 3) errs.handle = "Handle must be at least 3 characters";
+    else if (handleStatus === "taken") errs.handle = handleMessage || "That handle is not available";
+    else if (handleStatus === "checking") errs.handle = "Please wait…";
+    if (!email) errs.email = "Email is required";
+    if (!password) errs.password = "Password is required";
+    else if (password.length < 6) errs.password = "Password must be at least 6 characters";
+    if (password && confirmPassword && password !== confirmPassword) errs.confirmPassword = "Passwords do not match";
+    if (!confirmPassword) errs.confirmPassword = "Please confirm your password";
+    if (Object.keys(errs).length) { setFieldErrors(errs); return; }
+    setFieldErrors({});
 
     setLoading(true);
 
@@ -234,7 +228,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                 Please enter your details to sign in to your account.
               </p>
             </div>
-            <form onSubmit={handleEmailLogin} className="space-y-6">
+            <form onSubmit={handleEmailLogin} className="space-y-5" noValidate>
               {error && (
                 <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
                   {error}
@@ -246,15 +240,15 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Email Address
                 </label>
                 <input
-                  className="w-full px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none"
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-red-500" : "border-zinc-800"}`}
                   id="login-email"
                   name="email"
                   placeholder="name@example.com"
-                  required
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
                 />
+                {fieldErrors.email && <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>}
               </div>
 
               <div>
@@ -267,15 +261,15 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   </a>
                 </div>
                 <input
-                  className="w-full px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none"
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-red-500" : "border-zinc-800"}`}
                   id="login-password"
                   name="password"
                   placeholder="••••••••"
-                  required
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
                 />
+                {fieldErrors.password && <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>}
               </div>
 
               <button
@@ -315,7 +309,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                 Create your account and start exploring.
               </p>
             </div>
-            <form onSubmit={handleEmailSignup} className="space-y-4">
+            <form onSubmit={handleEmailSignup} className="space-y-4" noValidate>
               {error && (
                 <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
                   {error}
@@ -327,15 +321,15 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Display Name
                 </label>
                 <input
-                  className="w-full px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none"
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.displayName ? "border-red-500" : "border-zinc-800"}`}
                   id="signup-displayname"
                   placeholder="Your name"
-                  required
                   type="text"
                   maxLength={50}
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  onChange={(e) => { setDisplayName(e.target.value); setFieldErrors((p) => ({ ...p, displayName: "" })); }}
                 />
+                {fieldErrors.displayName && <p className="mt-1 text-xs text-red-400">{fieldErrors.displayName}</p>}
               </div>
 
               <div>
@@ -345,33 +339,28 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                 <div className="relative flex items-center">
                   <span className="absolute left-4 text-gray-500 select-none">@</span>
                   <input
-                    className="w-full pl-8 pr-10 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none lowercase"
+                    className={`w-full pl-8 pr-10 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none lowercase ${fieldErrors.handle ? "border-red-500" : "border-zinc-800"}`}
                     id="signup-handle"
                     placeholder="yourhandle"
-                    required
                     type="text"
-                    minLength={3}
                     maxLength={30}
-                    pattern="^[a-zA-Z0-9_]+$"
                     value={handle}
-                    onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                    onChange={(e) => { setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")); setFieldErrors((p) => ({ ...p, handle: "" })); }}
                   />
                   <span className="absolute right-3 text-lg">
                     {handleStatus === "checking" && <span className="text-gray-400 text-sm animate-pulse">...</span>}
-                    {handleStatus === "available" && <span className="text-green-400">✓</span>}
-                    {handleStatus === "reserved_for_you" && <span className="text-green-400">✓</span>}
+                    {(handleStatus === "available" || handleStatus === "reserved_for_you") && <span className="text-green-400">✓</span>}
                     {handleStatus === "taken" && <span className="text-red-400">✗</span>}
                   </span>
                 </div>
-                {handleStatus === "taken" && (
-                  <p className="mt-1 text-xs text-red-400">{handleMessage}</p>
-                )}
-                {(handleStatus === "available" || handleStatus === "reserved_for_you") && (
-                  <p className="mt-1 text-xs text-green-400">
-                    {handleStatus === "reserved_for_you" ? "Reserved for you!" : "Available"}
-                  </p>
-                )}
-                <p className="mt-1 text-xs text-gray-500">psy.market/@{handle || "yourhandle"}</p>
+                {fieldErrors.handle
+                  ? <p className="mt-1 text-xs text-red-400">{fieldErrors.handle}</p>
+                  : handleStatus === "taken"
+                    ? <p className="mt-1 text-xs text-red-400">{handleMessage}</p>
+                    : (handleStatus === "available" || handleStatus === "reserved_for_you")
+                      ? <p className="mt-1 text-xs text-green-400">{handleStatus === "reserved_for_you" ? "Reserved for you!" : "Available"}</p>
+                      : <p className="mt-1 text-xs text-gray-500">psy.market/@{handle || "yourhandle"}</p>
+                }
               </div>
 
               <div>
@@ -379,15 +368,14 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Email Address
                 </label>
                 <input
-                  className="w-full px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none"
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.email ? "border-red-500" : "border-zinc-800"}`}
                   id="signup-email"
-                  name="email"
                   placeholder="name@example.com"
-                  required
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
                 />
+                {fieldErrors.email && <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>}
               </div>
 
               <div>
@@ -395,16 +383,14 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Password
                 </label>
                 <input
-                  className="w-full px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none"
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.password ? "border-red-500" : "border-zinc-800"}`}
                   id="signup-password"
-                  name="password"
                   placeholder="At least 6 characters"
-                  required
                   type="password"
-                  minLength={6}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
                 />
+                {fieldErrors.password && <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>}
               </div>
 
               <div>
@@ -412,16 +398,14 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                   Confirm Password
                 </label>
                 <input
-                  className="w-full px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none"
+                  className={`w-full px-4 py-3 rounded bg-zinc-900 border text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none ${fieldErrors.confirmPassword ? "border-red-500" : "border-zinc-800"}`}
                   id="signup-confirm"
-                  name="confirmPassword"
                   placeholder="Repeat your password"
-                  required
                   type="password"
-                  minLength={6}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors((p) => ({ ...p, confirmPassword: "" })); }}
                 />
+                {fieldErrors.confirmPassword && <p className="mt-1 text-xs text-red-400">{fieldErrors.confirmPassword}</p>}
               </div>
 
               <button
