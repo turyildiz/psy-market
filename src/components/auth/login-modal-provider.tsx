@@ -4,6 +4,8 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -70,15 +72,47 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [handle, setHandle] = useState("");
+  const [handleStatus, setHandleStatus] = useState<"idle" | "checking" | "available" | "taken" | "reserved_for_you">("idle");
+  const [handleMessage, setHandleMessage] = useState("");
   const [error, setError] = useState<string | null>(() => getAuthErrorFromUrl());
   const [loading, setLoading] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(() => getNextPathFromUrl());
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!handle || handle.length < 3) {
+      setHandleStatus("idle");
+      setHandleMessage("");
+      return;
+    }
+    setHandleStatus("checking");
+    debounceRef.current = setTimeout(async () => {
+      const params = new URLSearchParams({ handle, email });
+      const res = await fetch(`/api/check-handle?${params}`);
+      const data = await res.json();
+      if (data.available) {
+        setHandleStatus(data.reserved_for_you ? "reserved_for_you" : "available");
+        setHandleMessage(data.reserved_for_you ? "Reserved for you!" : "");
+      } else {
+        setHandleStatus("taken");
+        setHandleMessage(data.message ?? "Not available");
+      }
+    }, 400);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handle, email]);
 
   const resetForm = useCallback(() => {
     setError(null);
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setDisplayName("");
+    setHandle("");
+    setHandleStatus("idle");
+    setHandleMessage("");
     setLoading(false);
   }, []);
 
@@ -123,6 +157,22 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     e.preventDefault();
     setError(null);
 
+    if (!displayName.trim()) {
+      setError("Display name is required");
+      return;
+    }
+    if (!handle || handle.length < 3) {
+      setError("Handle must be at least 3 characters");
+      return;
+    }
+    if (handleStatus === "taken") {
+      setError(handleMessage || "That handle is not available");
+      return;
+    }
+    if (handleStatus === "checking") {
+      setError("Please wait while we check your handle");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -140,6 +190,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { full_name: displayName.trim(), handle: handle.toLowerCase().trim() },
       },
     });
 
@@ -264,12 +315,64 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
                 Create your account and start exploring.
               </p>
             </div>
-            <form onSubmit={handleEmailSignup} className="space-y-6">
+            <form onSubmit={handleEmailSignup} className="space-y-4">
               {error && (
                 <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
                   {error}
                 </div>
               )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-displayname">
+                  Display Name
+                </label>
+                <input
+                  className="w-full px-4 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none"
+                  id="signup-displayname"
+                  placeholder="Your name"
+                  required
+                  type="text"
+                  maxLength={50}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-handle">
+                  Handle
+                </label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-4 text-gray-500 select-none">@</span>
+                  <input
+                    className="w-full pl-8 pr-10 py-3 rounded bg-zinc-900 border border-zinc-800 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 outline-none lowercase"
+                    id="signup-handle"
+                    placeholder="yourhandle"
+                    required
+                    type="text"
+                    minLength={3}
+                    maxLength={30}
+                    pattern="^[a-zA-Z0-9_]+$"
+                    value={handle}
+                    onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                  />
+                  <span className="absolute right-3 text-lg">
+                    {handleStatus === "checking" && <span className="text-gray-400 text-sm animate-pulse">...</span>}
+                    {handleStatus === "available" && <span className="text-green-400">✓</span>}
+                    {handleStatus === "reserved_for_you" && <span className="text-green-400">✓</span>}
+                    {handleStatus === "taken" && <span className="text-red-400">✗</span>}
+                  </span>
+                </div>
+                {handleStatus === "taken" && (
+                  <p className="mt-1 text-xs text-red-400">{handleMessage}</p>
+                )}
+                {(handleStatus === "available" || handleStatus === "reserved_for_you") && (
+                  <p className="mt-1 text-xs text-green-400">
+                    {handleStatus === "reserved_for_you" ? "Reserved for you!" : "Available"}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">psy.market/@{handle || "yourhandle"}</p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="signup-email">
@@ -324,7 +427,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
               <button
                 className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded transition duration-200 text-lg uppercase tracking-wider hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
-                disabled={loading}
+                disabled={loading || handleStatus === "taken" || handleStatus === "checking"}
               >
                 {loading ? "Creating account..." : "Create Account"}
               </button>
