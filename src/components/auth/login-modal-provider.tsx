@@ -168,11 +168,7 @@ export function LoginModalProvider({ children }: { children: React.ReactNode }) 
     const destination = returnTo ?? "/dashboard";
     setLoginSuccess(true);
     clearAuthQueryParams();
-    router.refresh();
-    setTimeout(() => {
-      close();
-      router.push(destination);
-    }, 800);
+    setTimeout(() => router.push(destination), 800);
   }
 
   async function handleEmailSignup(e: React.FormEvent) {
